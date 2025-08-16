@@ -15,18 +15,11 @@
   font-size: 16px;
 }
 
-.small-input {
-  width: 110px;
-  padding: 8px;
-  margin-left: 8px;
-  font-size: 14px;
-}
-
+.small-input { width: 110px; padding: 8px; margin-left: 8px; font-size: 14px; }
 .select { padding: 8px; margin-left: 8px; }
-
 .checkbox { display: flex; align-items: center; gap: 6px; }
 
-/* パネルレイアウト */
+/* レイアウト */
 .panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -50,18 +43,22 @@
 
 .panel-right { display: flex; flex-direction: column; gap: 12px; }
 
-.primary-btn {
+.actions { display: flex; gap: 8px; }
+
+.primary-btn, .grade-btn {
   padding: 12px 16px;
   font-weight: 700;
   border: none;
   border-radius: 10px;
-  background: #2f6fed;
   color: #fff;
   cursor: pointer;
 }
+.primary-btn { background: #2f6fed; }
 .primary-btn:hover { filter: brightness(0.95); }
+.grade-btn { background: #10a37f; }
+.grade-btn:hover { filter: brightness(0.95); }
 
-/* ★ 解答欄 */
+/* 解答欄 */
 .answer-box {
   border: 1px solid #e6e6e6;
   border-radius: 12px;
@@ -81,29 +78,22 @@
   background: #fff;
   resize: vertical;
 }
-.secondary-btn {
-  align-self: flex-start;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background: #f7f7f7;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
 
+.verdict { font-weight: 700; }
+.verdict.correct { color: #087443; }
+.verdict.almost { color: #b58900; }
+.verdict.wrong { color: #b00020; }
+.verdict-msg { font-weight: 400; margin-left: 4px; color: #444; }
+
+/* 結果表示 */
 .error { color: crimson; white-space: pre-wrap; }
 .result-title { font-weight: 700; margin-bottom: 4px; }
 .result-pre { background: #f6f6f6; padding: 12px; border-radius: 8px; overflow-x: auto; }
 
 .note { margin-top: 16px; color: #666; font-size: 14px; }
 
-/* ★ キーパッド入力先の切替 */
-.toggle {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* キーパッド入力先の切替 */
+.toggle { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
 .toggle-btn {
   padding: 6px 10px;
   border-radius: 8px;
@@ -111,8 +101,4 @@
   background: #fff;
   cursor: pointer;
 }
-.toggle-btn.active {
-  background: #e9f0ff;
-  border-color: #b6c9ff;
-  font-weight: 700;
-}
+.toggle-btn.active { background: #e9f0ff; border-color: #b6c9ff; font-weight: 700; }
