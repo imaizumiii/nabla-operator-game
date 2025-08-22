@@ -2,9 +2,10 @@ import { useRef, useState } from "react";
 import Algebrite from "algebrite";
 import Keypad from "./components/FunctionKeypad.jsx";
 import "./App.css";
+import MathView from "./components/MathView.jsx";
 
 export default function App() {
-  const [expr, setExpr] = useState("x^2 + sin(x)");
+  const [expression, setExpr] = useState("x^2 + sin(x)");
   const [variable, setVariable] = useState("x");
   const [mode, setMode] = useState("diff"); // 'diff' | 'int'
   const [isDefinite, setIsDefinite] = useState(false);
@@ -15,7 +16,7 @@ export default function App() {
   const [userAnswer, setUserAnswer] = useState("");
   const [verdict, setVerdict] = useState(null);
   const [verdictMessage, setVerdictMessage] = useState("");
-  const [activeTarget, setActiveTarget] = useState("expr");
+  const [activeTarget, setActiveTarget] = useState("expression");
 
   const answerRef = useRef(null);
   const inputRef = useRef(null);
@@ -29,7 +30,7 @@ export default function App() {
 
   const insertTokenAtCaret = (token) => {
     const el = activeTarget === "answer" ? answerRef.current : inputRef.current;
-    const value = activeTarget === "answer" ? userAnswer : expr;
+    const value = activeTarget === "answer" ? userAnswer : expression;
     const setValue = activeTarget === "answer" ? setUserAnswer : setExpr;
 
     if (!el) return;
@@ -40,17 +41,17 @@ export default function App() {
       return;
     }
     if (token === "BACKSPACE") {
-      const start = el.selectionStart ?? expr.length;
-      const end = el.selectionEnd ?? expr.length;
+      const start = el.selectionStart ?? expression.length;
+      const end = el.selectionEnd ?? expression.length;
       if (start !== end) {
-        const next = expr.slice(0, start) + expr.slice(end);
+        const next = expression.slice(0, start) + expression.slice(end);
         setExpr(next);
         setTimeout(() => {
-          expr.focus();
-          expr.setSelectionRange(start, start);
+          expression.focus();
+          expression.setSelectionRange(start, start);
         }, 0);
       } else if (start > 0) {
-        const next = expr.slice(0, start - 1) + expr.slice(end);
+        const next = expression.slice(0, start - 1) + expression.slice(end);
         const position = start - 1;
         setExpr(next);
         setTimeout(() => {
@@ -61,14 +62,14 @@ export default function App() {
       return;
     }
 
-    const start = el.selectionStart ?? expr.length;
-    const end = el.selectionEnd ?? expr.length;
+    const start = el.selectionStart ?? expression.length;
+    const end = el.selectionEnd ?? expression.length;
 
     const caretMarker = "|";
     const markerIndex = token.indexOf(caretMarker);
     const tokenText = token.replace(caretMarker, "");
 
-    const next = expr.slice(0, start) + tokenText + expr.slice(end);
+    const next = expression.slice(0, start) + tokenText + expression.slice(end);
     const caretPosition =
       markerIndex >= 0 ? start + markerIndex : start + tokenText.length;
 
@@ -85,16 +86,16 @@ export default function App() {
       let out;
       if (mode === "diff") {
         // 微分（例: d(x^2 + sin(x), x)）
-        out = Algebrite.run(`d(${expr}, ${variable})`);
+        out = Algebrite.run(`d(${expression}, ${variable})`);
       } else {
         if (isDefinite) {
           // 定積分（例: defint(x^2, x, 0, 1)）
           out = Algebrite.run(
-            `defint(${expr}, ${variable}, ${lower}, ${upper})`
+            `defint(${expression}, ${variable}, ${lower}, ${upper})`
           );
         } else {
           // 不定積分（例: integral(x^2 + sin(x), x)）
-          out = Algebrite.run(`integral(${expr}, ${variable})`);
+          out = Algebrite.run(`integral(${expression}, ${variable})`);
         }
       }
       // 仕上げに簡単化
@@ -106,15 +107,17 @@ export default function App() {
     }
   };
 
-  const nearlyEqual = (a, b, atol = 1e-6, rtol = 1e-6) => { 
+  const nearlyEqual = (a, b, atol = 1e-6, rtol = 1e-6) => {
     if (!isFinite(a) || !isFinite(b)) return false;
-    const diff = Math.abs(a -b);
-    return diff <= atol + rtol * Math.max(1, Math.abs(a), Math.abs(b)); 
+    const diff = Math.abs(a - b);
+    return diff <= atol + rtol * Math.max(1, Math.abs(a), Math.abs(b));
   };
 
-  const evalAt = (exprStr, xVal) => {
+  const evalAt = (expressionStr, xVal) => {
     try {
-      const s = Algebrite.run(`float(subst((${exprStr}), ${variavle}, (${xVal})))`)
+      const s = Algebrite.run(
+        `float(subst((${expressionStr}), ${variavle}, (${xVal})))`
+      );
       const num = Number(String(s).replave(/\s+/g, ""));
       return Number.isFinite(num) ? num : NaN;
     } catch {
@@ -122,21 +125,58 @@ export default function App() {
     }
   };
 
+  const detectConstantMultiple = (userStr, correctStr, variable) => {
+    const samples = [-2, -1.1, -0.5, -0.2, 0.1, 0.5, 1, 2, 3];
+    const ratios = [];
+    for (const x of samples) {
+      const c = evalAt(correctStr, x);
+      const u = evalAt(userStr, x);
+      if (!Number.isFinite(c) || Math.abs(c) < 1e-9 || !Number.isFinite(u))
+        continue;
+      ratios.push(u / c);
+    }
+
+    if (ratios.length < 3) return { isMultiple: false };
+
+    ratios.sort((a, b) => a - b);
+    const median = ratios[Math.floor(ratios.length / 2)];
+
+    let agree = 0,
+      total = 0;
+    for (const x of samples) {
+      const c = evalAt(correctStr, x);
+      const u = evalAt(userStr, x);
+      if (!Number.isFinite(c) || Math.abs(c) < 1e-9 || !Number.isFinite(u))
+        continue;
+      total++;
+      if (nearlyEqual(u, median * c)) agree++;
+    }
+    const ratioAgree = total ? agree / total : 0;
+
+    if (total >= 3 && ratioAgree >= 0.9) {
+      return { isMultiple: true, k: median, support: `${agree}/${total}` };
+    }
+    return { isMultiple: false };
+  };
+
   const symbolicOrNumericEqual = (userStr, correctStr) => {
     try {
-      const diff = Algebrite.run(`simplify(((${correctStr}))- ((${userStr})))`).trim();
-      if (diff === "0" || diff === "0.0") return {ok: true, method: "symbolic" };
-    } catch(_) { }
-      const samples = [-2, -1.1, -0.5, -0.2, 0.1, 0.5, 1, 2, 3];
-      const values = [];
-      for (const x of samples) {
-        const a = evalAt(userStr, x);
-        const b = evalAt(correctStr, x);
-        if (Number.isFinite(a) && Number.isFinite(b)) {
-          values.push(nearlyEqual(a, b));
-        }
+      const diff = Algebrite.run(
+        `simplify(((${correctStr}))- ((${userStr})))`
+      ).trim();
+      if (diff === "0" || diff === "0.0")
+        return { ok: true, method: "symbolic" };
+    } catch (_) {}
+    const samples = [-2, -1.1, -0.5, -0.2, 0.1, 0.5, 1, 2, 3];
+    const values = [];
+    for (const x of samples) {
+      const a = evalAt(userStr, x);
+      const b = evalAt(correctStr, x);
+      if (Number.isFinite(a) && Number.isFinite(b)) {
+        values.push(nearlyEqual(a, b));
+      }
     }
-  }
+  };
 
   const grade = () => {
     setVerdict(null);
@@ -148,7 +188,7 @@ export default function App() {
       setVerdictMessage("解答が入力されていません。");
       return;
     }
-    if (!expr.trim()) {
+    if (!expression.trim()) {
       setVerdict("wrong");
       setVerdictMessage("式が入力されていません。");
       return;
@@ -156,52 +196,108 @@ export default function App() {
 
     try {
       // 微分の場合
-      if (mode === "diff") { 
-        const correct = Algebrite.run(`simplify(d((${expr}), ${variable}))`);
+      if (mode === "diff") {
+        const correct = Algebrite.run(
+          `simplify(d((${expression}), ${variable}))`
+        );
         const user = Algebrite.run(`simplify((${userAnswer}))`);
 
-        const { ok, almost, method, ratio } = symbolicOrNumericEqual(user, correct);
+        const { ok, almost, method, ratio } = symbolicOrNumericEqual(
+          user,
+          correct
+        );
         if (ok) {
           setVerdict("correct");
-          setVerdictMessage(`正解 (${method === "symbolic" ? "記号的に一致" : "数値的に一致"})`);
+          setVerdictMessage(
+            `正解 (${method === "symbolic" ? "記号的に一致" : "数値的に一致"})`
+          );
         } else if (almost) {
           setVerdict("almost");
-          setVerdictMessage(`ほぼ正解 (数値比較一致率 ${(ratio * 100).toFixed(0)}%)`);
+          setVerdictMessage(
+            `ほぼ正解 (数値比較一致率 ${(ratio * 100).toFixed(0)}%)`
+          );
         } else {
-          setVerdict("wrong");
-          setVerdictMessage("不正解です。差分を簡約して0になりません。");
+          const mult = detectConstantMultiple(user, correct, variable);
+          if (mult.isMultiple) {
+            setVerdict("wrong");
+            setVerdictMessage(
+              `不正解です。ただし「定数倍」関係です。（あなた = ${mult.k.toPrecision(
+                4
+              )} * 模範, 検証 ${mult.support}）`
+            );
+          } else {
+            setVerdict("wrong");
+            setVerdictMessage(
+              "不正解です。導関数が一致しません。(定数差以外の差があります)"
+            );
+          }
         }
         return;
       }
-      
+
       // 不定積分の場合
       if (!isDefinite) {
-        const correctIntegral = Algebrite.run(`simplify(integral((${expr}), ${variable}))`);
-        const dCorrect = Algebrite.run(`simplify(d((${correctIntegral}), ${variable}))`);
-        const dUser = Algebrite.run(`simplify(d((${userAnswer}), ${variable}))`);
+        const correctIntegral = Algebrite.run(
+          `simplify(integral((${expression}), ${variable}))`
+        );
+        const dCorrect = Algebrite.run(
+          `simplify(d((${correctIntegral}), ${variable}))`
+        );
+        const dUser = Algebrite.run(
+          `simplify(d((${userAnswer}), ${variable}))`
+        );
 
-        const { ok, almost, method, ratio } = symbolicOrNumericEqual(dUser, dCorrect);
+        const { ok, almost, method, ratio } = symbolicOrNumericEqual(
+          dUser,
+          dCorrect
+        );
         if (ok) {
           setVerdict("correct");
-          setVerdictMessage(`正解 (導関数が${method === "symbolic" ? "記号的" : "数値的"}に一致。定数差は許容)`);
+          setVerdictMessage(
+            `正解 (導関数が${
+              method === "symbolic" ? "記号的" : "数値的"
+            }に一致。定数差は許容)`
+          );
         } else if (almost) {
           setVerdict("almost");
-          setVerdictMessage(`ほぼ正解 (数値比較一致率 ${(ratio * 100).toFixed(0)}%)`);
+          setVerdictMessage(
+            `ほぼ正解 (数値比較一致率 ${(ratio * 100).toFixed(0)}%)`
+          );
         } else {
-          setVerdict("wrong");
-          setVerdictMessage("不正解です。導関数が一致しません。(定数差以外の差があります)");
+          const mult = detectConstantMultiple(dUser, dCorrect, variable);
+          if (mult.isMultiple) {
+            setVerdict("wrong");
+            setVerdictMessage(
+              `不正解です。導関数が定数倍の関係です。（あなた = ${mult.k.toPrecision(
+                4
+              )} * 模範, 検証 ${mult.support}）`
+            );
+          } else {
+            setVerdict("wrong");
+            setVerdictMessage(
+              "不正解です。導関数が一致しません。(定数差以外の差があります)"
+            );
+          }
         }
         return;
       }
 
       // 定積分の場合
-      const correctDef = Algebrite.run(`simplify(defint((${expr}), ${variable}, ${lower}, ${upper}))`);
-      const fCorrect = Number(String(Algebrite.run(`float(${correctDef}))`)).replace(/\s+/g, ""));
-      const fUser = Number(String(Algebrite.run(`float((${userAnswer}))`)).replace(/\s+/g, ""));
+      const correctDef = Algebrite.run(
+        `simplify(defint((${expression}), ${variable}, ${lower}, ${upper}))`
+      );
+      const fCorrect = Number(
+        String(Algebrite.run(`float(${correctDef}))`)).replace(/\s+/g, "")
+      );
+      const fUser = Number(
+        String(Algebrite.run(`float((${userAnswer}))`)).replace(/\s+/g, "")
+      );
 
       if (!isFinite(fCorrect) || !isFinite(fUser)) {
         setVerdict("wrong");
-        setVerdictMessage("数値評価に失敗しました。式や範囲を確認してください。");
+        setVerdictMessage(
+          "数値評価に失敗しました。式や範囲を確認してください。"
+        );
         return;
       }
       if (nearlyEqual(fUser, fCorrect)) {
@@ -209,14 +305,18 @@ export default function App() {
         setVerdictMessage("正解 (数値的に一致)");
       } else {
         setVerdict("wrong");
-        setVerdictMessage(`不正解です。正しい値と一致しません（あなた： ${fUser}, 正解：${fCorrect}）`);
+        setVerdictMessage(
+          `不正解です。正しい値と一致しません（あなた： ${fUser}, 正解：${fCorrect}）`
+        );
       }
     } catch (e) {
       setError(String(e?.message || e));
       setVerdict("wrong");
-      setVerdictMessage("計算中にエラーが発生しました。式や変数を確認してください。");
+      setVerdictMessage(
+        "計算中にエラーが発生しました。式や変数を確認してください。"
+      );
     }
-  }
+  };
 
   return (
     <div className="container">
@@ -226,13 +326,17 @@ export default function App() {
         ① 式（例: <code>x^2 + sin(x)</code>）
         <input
           ref={inputRef}
-          className="expr-input"
-          value={expr}
+          className="expression-input"
+          value={expression}
           onChange={(e) => setExpr(e.target.value)}
-          onFocus={() => setActiveTarget("expr")}
+          onFocus={() => setActiveTarget("expression")}
           placeholder="例: x^2 + sin(x)"
         />
       </label>
+      <div className="panel">
+        <div className="label">問題（数式表示）</div>
+        <MathView expression={expression} />
+      </div>
 
       <div className="row">
         <label>
@@ -296,15 +400,23 @@ export default function App() {
         <span>キーパッド入力先:</span>
         <button
           type="button"
-          className={`toggle-btn ${activeTarget === "expr" ? "active" : ""}`}
-          onClick={() => { setActiveTarget("expr"); inputRef.current?.focus(); }}
+          className={`toggle-btn ${
+            activeTarget === "expression" ? "active" : ""
+          }`}
+          onClick={() => {
+            setActiveTarget("expression");
+            inputRef.current?.focus();
+          }}
         >
           式
         </button>
         <button
           type="button"
           className={`toggle-btn ${activeTarget === "answer" ? "active" : ""}`}
-          onClick={() => { setActiveTarget("answer"); answerRef.current?.focus(); }}
+          onClick={() => {
+            setActiveTarget("answer");
+            answerRef.current?.focus();
+          }}
         >
           解答
         </button>
@@ -317,8 +429,12 @@ export default function App() {
 
         <div className="panel-right">
           <div className="actions">
-            <button className="primary-btn" onClick={compute}>計算する（模範）</button>
-            <button className="grade-btn" onClick={grade}>採点する</button>
+            <button className="primary-btn" onClick={compute}>
+              計算する（模範）
+            </button>
+            <button className="grade-btn" onClick={grade}>
+              採点する
+            </button>
           </div>
 
           <div className="answer-box">
@@ -332,6 +448,12 @@ export default function App() {
               onFocus={() => setActiveTarget("answer")}
               placeholder={answerPlaceholder}
             />
+            {userAnswer && (
+              <div className="answer-preview">
+                <div className="label">解答（数式表示）</div>
+                <MathView expression={userAnswer} />
+              </div>
+            )}
             {verdict && (
               <div className={`verdict ${verdict}`}>
                 {verdict === "correct" && "✅ 正解"}
@@ -347,15 +469,16 @@ export default function App() {
           {result && (
             <div className="result">
               <div className="result-title">模範計算結果</div>
-              <pre className="result-pre">{result}</pre>
+              <MathView expression={result} />
             </div>
           )}
         </div>
       </div>
 
       <p className="note">
-        * 採点は 1 変数前提です。入力や式が複数変数を含む場合は結果が不安定になることがあります。<br />
-        * 不定積分は「定数差は許容」として判定します。
+        * 採点は 1
+        変数前提です。入力や式が複数変数を含む場合は結果が不安定になることがあります。
+        <br />* 不定積分は「定数差は許容」として判定します。
       </p>
     </div>
   );

@@ -8,7 +8,7 @@
 .block { display: block; margin-top: 12px; }
 .row { display: flex; gap: 12px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
 
-.expr-input {
+.expression-input {
   width: 100%;
   padding: 10px 12px;
   margin-top: 4px;
