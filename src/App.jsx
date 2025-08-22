@@ -5,9 +5,9 @@ import "./App.css";
 import MathView from "./components/MathView.jsx";
 
 export default function App() {
-  const [expression, setExpr] = useState("x^2 + sin(x)");
+  const [expression, setExpression] = useState("x^2 + sin(x)");
   const [variable, setVariable] = useState("x");
-  const [mode, setMode] = useState("diff"); // 'diff' | 'int'
+  const [mode, setMode] = useState("difference"); // 'difference' | 'int'
   const [isDefinite, setIsDefinite] = useState(false);
   const [lower, setLower] = useState("0");
   const [upper, setUpper] = useState("1");
@@ -22,7 +22,7 @@ export default function App() {
   const inputRef = useRef(null);
 
   const answerPlaceholder =
-    mode === "diff"
+    mode === "difference"
       ? "例: 2*x + cos(x)"
       : isDefinite
       ? "例: 1/3 + cos(1) - cos(0)"
@@ -31,12 +31,12 @@ export default function App() {
   const insertTokenAtCaret = (token) => {
     const el = activeTarget === "answer" ? answerRef.current : inputRef.current;
     const value = activeTarget === "answer" ? userAnswer : expression;
-    const setValue = activeTarget === "answer" ? setUserAnswer : setExpr;
+    const setValue = activeTarget === "answer" ? setUserAnswer : setExpression;
 
     if (!el) return;
 
     if (token === "CLEAR") {
-      setExpr("");
+      setExpression("");
       setTimeout(() => el.focus(), 0);
       return;
     }
@@ -45,7 +45,7 @@ export default function App() {
       const end = el.selectionEnd ?? expression.length;
       if (start !== end) {
         const next = expression.slice(0, start) + expression.slice(end);
-        setExpr(next);
+        setExpression(next);
         setTimeout(() => {
           expression.focus();
           expression.setSelectionRange(start, start);
@@ -53,7 +53,7 @@ export default function App() {
       } else if (start > 0) {
         const next = expression.slice(0, start - 1) + expression.slice(end);
         const position = start - 1;
-        setExpr(next);
+        setExpression(next);
         setTimeout(() => {
           el.focus();
           el.setSelectionRange(position, position);
@@ -73,7 +73,7 @@ export default function App() {
     const caretPosition =
       markerIndex >= 0 ? start + markerIndex : start + tokenText.length;
 
-    setExpr(next);
+    setExpression(next);
     setTimeout(() => {
       el.focus();
       el.setSelectionRange(caretPosition, caretPosition);
@@ -84,17 +84,17 @@ export default function App() {
     setError("");
     try {
       let out;
-      if (mode === "diff") {
-        // 微分（例: d(x^2 + sin(x), x)）
+      if (mode === "difference") {
+        // 微分モード
         out = Algebrite.run(`d(${expression}, ${variable})`);
       } else {
         if (isDefinite) {
-          // 定積分（例: defint(x^2, x, 0, 1)）
+          // 定積分モード
           out = Algebrite.run(
             `defint(${expression}, ${variable}, ${lower}, ${upper})`
           );
         } else {
-          // 不定積分（例: integral(x^2 + sin(x), x)）
+          // 不定積分モード
           out = Algebrite.run(`integral(${expression}, ${variable})`);
         }
       }
@@ -108,17 +108,31 @@ export default function App() {
   };
 
   const nearlyEqual = (a, b, atol = 1e-6, rtol = 1e-6) => {
-    if (!isFinite(a) || !isFinite(b)) return false;
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
     const diff = Math.abs(a - b);
-    return diff <= atol + rtol * Math.max(1, Math.abs(a), Math.abs(b));
+    const tol = atol + rtol * Math.max(1, Math.abs(a), Math.abs(b));
+    return diff <= tol;
   };
 
-  const evalAt = (expressionStr, xVal) => {
+  const evaluateAt = (expressionStr, xVal) => {
     try {
-      const s = Algebrite.run(
-        `float(subst((${expressionStr}), ${variavle}, (${xVal})))`
-      );
-      const num = Number(String(s).replave(/\s+/g, ""));
+      const v = (variable || "x").trim(); // 念のため
+      const cmd = `float(subst((${expressionStr}), ${v}, (${xVal})))`;
+      const raw = Algebrite.run(cmd);
+      const num = Number(String(raw).replace(/\s+/g, ""));
+      return Number.isFinite(num) ? num : NaN; // ← Number.isFinite を使用
+    } catch {
+      return NaN;
+    }
+  };
+
+  const evaluateDiffAt = (userStr, correctStr, xVal) => {
+    try {
+      const v = (variable || "x").trim();
+      const diffExpr = `simplify(((${correctStr})) - ((${userStr})))`;
+      const cmd = `float(subst((${diffExpr}), ${v}, (${xVal})))`;
+      const raw = Algebrite.run(cmd);
+      const num = Number(String(raw).replace(/\s+/g, ""));
       return Number.isFinite(num) ? num : NaN;
     } catch {
       return NaN;
@@ -129,8 +143,8 @@ export default function App() {
     const samples = [-2, -1.1, -0.5, -0.2, 0.1, 0.5, 1, 2, 3];
     const ratios = [];
     for (const x of samples) {
-      const c = evalAt(correctStr, x);
-      const u = evalAt(userStr, x);
+      const c = evaluateAt(correctStr, x);
+      const u = evaluateAt(userStr, x);
       if (!Number.isFinite(c) || Math.abs(c) < 1e-9 || !Number.isFinite(u))
         continue;
       ratios.push(u / c);
@@ -144,8 +158,8 @@ export default function App() {
     let agree = 0,
       total = 0;
     for (const x of samples) {
-      const c = evalAt(correctStr, x);
-      const u = evalAt(userStr, x);
+      const c = evaluateAt(correctStr, x);
+      const u = evaluateAt(userStr, x);
       if (!Number.isFinite(c) || Math.abs(c) < 1e-9 || !Number.isFinite(u))
         continue;
       total++;
@@ -160,22 +174,73 @@ export default function App() {
   };
 
   const symbolicOrNumericEqual = (userStr, correctStr) => {
+    // 1) 記号比較：差が 0 なら即OK
     try {
       const diff = Algebrite.run(
-        `simplify(((${correctStr}))- ((${userStr})))`
+        `simplify(((${correctStr})) - ((${userStr})))`
       ).trim();
-      if (diff === "0" || diff === "0.0")
-        return { ok: true, method: "symbolic" };
-    } catch (_) {}
+      if (diff === "0" || diff === "0.0") {
+        return {
+          ok: true,
+          almost: false,
+          method: "symbolic",
+          ratio: 1,
+          total: null,
+          match: null,
+        };
+      }
+    } catch (_) {
+      // 記号比較に失敗しても数値比較へ
+    }
+
+    // 2) 数値比較：差そのものを各点で評価（左右のズレを回避）
     const samples = [-2, -1.1, -0.5, -0.2, 0.1, 0.5, 1, 2, 3];
-    const values = [];
+    let total = 0,
+      match = 0;
+    const v = (variable || "x").trim();
+
     for (const x of samples) {
-      const a = evalAt(userStr, x);
-      const b = evalAt(correctStr, x);
-      if (Number.isFinite(a) && Number.isFinite(b)) {
-        values.push(nearlyEqual(a, b));
+      try {
+        const diffExpr = `simplify(((${correctStr})) - ((${userStr})))`;
+        const cmd = `float(subst((${diffExpr}), ${v}, (${x})))`;
+        const raw = Algebrite.run(cmd);
+        const val = Number(String(raw).replace(/\s+/g, ""));
+        if (Number.isFinite(val)) {
+          total++;
+          const tol = 1e-6 + 1e-6 * Math.max(1, Math.abs(val));
+          if (Math.abs(val) <= tol) match++;
+        }
+      } catch {
+        // このサンプル点は無視
       }
     }
+
+    const ratio = total ? match / total : 0;
+    const MIN_VALID = 5,
+      OK_RATIO = 0.999,
+      ALMOST_RATIO = 0.8;
+
+    if (total >= MIN_VALID && ratio >= OK_RATIO) {
+      return {
+        ok: true,
+        almost: false,
+        method: "numeric",
+        ratio,
+        total,
+        match,
+      };
+    }
+    if (ratio >= ALMOST_RATIO) {
+      return {
+        ok: false,
+        almost: true,
+        method: "numeric",
+        ratio,
+        total,
+        match,
+      };
+    }
+    return { ok: false, almost: false, method: "numeric", ratio, total, match };
   };
 
   const grade = () => {
@@ -196,11 +261,13 @@ export default function App() {
 
     try {
       // 微分の場合
-      if (mode === "diff") {
+      if (mode === "difference") {
         const correct = Algebrite.run(
           `simplify(d((${expression}), ${variable}))`
         );
         const user = Algebrite.run(`simplify((${userAnswer}))`);
+        console.log("[grade/diff] user(simplified)   =", user); //Debug log
+        console.log("[grade/diff] correct(simplified)=", correct); //Debug log
 
         const { ok, almost, method, ratio } = symbolicOrNumericEqual(
           user,
@@ -309,8 +376,8 @@ export default function App() {
           `不正解です。正しい値と一致しません（あなた： ${fUser}, 正解：${fCorrect}）`
         );
       }
-    } catch (e) {
-      setError(String(e?.message || e));
+    } catch (error) {
+      setError(String(error?.message || error));
       setVerdict("wrong");
       setVerdictMessage(
         "計算中にエラーが発生しました。式や変数を確認してください。"
@@ -328,7 +395,7 @@ export default function App() {
           ref={inputRef}
           className="expression-input"
           value={expression}
-          onChange={(e) => setExpr(e.target.value)}
+          onChange={(e) => setExpression(e.target.value)}
           onFocus={() => setActiveTarget("expression")}
           placeholder="例: x^2 + sin(x)"
         />
@@ -355,7 +422,7 @@ export default function App() {
             value={mode}
             onChange={(e) => setMode(e.target.value)}
           >
-            <option value="diff">微分</option>
+            <option value="difference">微分</option>
             <option value="int">積分</option>
           </select>
         </label>
