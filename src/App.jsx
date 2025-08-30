@@ -36,24 +36,24 @@ export default function App() {
     if (!el) return;
 
     if (token === "CLEAR") {
-      setExpression("");
+      setValue("");
       setTimeout(() => el.focus(), 0);
       return;
     }
     if (token === "BACKSPACE") {
-      const start = el.selectionStart ?? expression.length;
-      const end = el.selectionEnd ?? expression.length;
+      const start = el.selectionStart ?? value.length;
+      const end = el.selectionEnd ?? value.length;
       if (start !== end) {
-        const next = expression.slice(0, start) + expression.slice(end);
-        setExpression(next);
+        const next = value.slice(0, start) + value.slice(end);
+        setValue(next);
         setTimeout(() => {
-          expression.focus();
-          expression.setSelectionRange(start, start);
+          value.focus();
+          value.setSelectionRange(start, start);
         }, 0);
       } else if (start > 0) {
-        const next = expression.slice(0, start - 1) + expression.slice(end);
+        const next = value.slice(0, start - 1) + value.slice(end);
         const position = start - 1;
-        setExpression(next);
+        setValue(next);
         setTimeout(() => {
           el.focus();
           el.setSelectionRange(position, position);
@@ -62,18 +62,18 @@ export default function App() {
       return;
     }
 
-    const start = el.selectionStart ?? expression.length;
-    const end = el.selectionEnd ?? expression.length;
+    const start = el.selectionStart ?? value.length;
+    const end = el.selectionEnd ?? value.length;
 
     const caretMarker = "|";
     const markerIndex = token.indexOf(caretMarker);
     const tokenText = token.replace(caretMarker, "");
 
-    const next = expression.slice(0, start) + tokenText + expression.slice(end);
+    const next = value.slice(0, start) + tokenText + value.slice(end);
     const caretPosition =
       markerIndex >= 0 ? start + markerIndex : start + tokenText.length;
 
-    setExpression(next);
+    setValue(next);
     setTimeout(() => {
       el.focus();
       el.setSelectionRange(caretPosition, caretPosition);
@@ -116,11 +116,13 @@ export default function App() {
 
   const evaluateAt = (expressionStr, xVal) => {
     try {
-      const v = (variable || "x").trim(); // 念のため
+      const v = /^[A-Za-z]\w*$/.test((variable || "").trim())
+        ? (variable || "x").trim()
+        : "x";
       const cmd = `float(subst((${expressionStr}), ${v}, (${xVal})))`;
       const raw = Algebrite.run(cmd);
       const num = Number(String(raw).replace(/\s+/g, ""));
-      return Number.isFinite(num) ? num : NaN; // ← Number.isFinite を使用
+      return Number.isFinite(num) ? num : NaN;
     } catch {
       return NaN;
     }
@@ -139,38 +141,25 @@ export default function App() {
     }
   };
 
-  const detectConstantMultiple = (userStr, correctStr, variable) => {
-    const samples = [-2, -1.1, -0.5, -0.2, 0.1, 0.5, 1, 2, 3];
-    const ratios = [];
-    for (const x of samples) {
-      const c = evaluateAt(correctStr, x);
-      const u = evaluateAt(userStr, x);
-      if (!Number.isFinite(c) || Math.abs(c) < 1e-9 || !Number.isFinite(u))
-        continue;
-      ratios.push(u / c);
+  const detectConstantMultiple = (userStr, correctStr) => {
+    // 変数名の安全化
+    const v = /^[A-Za-z]\w*$/.test((variable || "").trim())
+      ? (variable || "x").trim()
+      : "x";
+
+    // 0) 記号的チェック：d( (u/c), v ) == 0 なら「定数倍」
+    //   例外: c=0 の点は無視。比の導関数が 0 なら定数。
+    try {
+      const ratioExpr = `simplify(((${userStr})) / ((${correctStr})))`;
+      const dRatio = Algebrite.run(`simplify(d((${ratioExpr}), ${v}))`).trim();
+      if (dRatio === "0" || dRatio === "0.0") {
+        return { isMultiple: true, k: 1, support: "symbolic" };
+      } else {
+        return { isMultiple: false };
+      }
+    } catch (e) {
+      console.error("Error in symbolic constant multiple detection:", e);
     }
-
-    if (ratios.length < 3) return { isMultiple: false };
-
-    ratios.sort((a, b) => a - b);
-    const median = ratios[Math.floor(ratios.length / 2)];
-
-    let agree = 0,
-      total = 0;
-    for (const x of samples) {
-      const c = evaluateAt(correctStr, x);
-      const u = evaluateAt(userStr, x);
-      if (!Number.isFinite(c) || Math.abs(c) < 1e-9 || !Number.isFinite(u))
-        continue;
-      total++;
-      if (nearlyEqual(u, median * c)) agree++;
-    }
-    const ratioAgree = total ? agree / total : 0;
-
-    if (total >= 3 && ratioAgree >= 0.9) {
-      return { isMultiple: true, k: median, support: `${agree}/${total}` };
-    }
-    return { isMultiple: false };
   };
 
   const symbolicOrNumericEqual = (userStr, correctStr) => {
@@ -188,59 +177,19 @@ export default function App() {
           total: null,
           match: null,
         };
+      } else {
+        return {
+          ok: false,
+          almost: false,
+          method: "symbolic",
+          ratio: 0,
+          total: null,
+          match: null,
+        };
       }
-    } catch (_) {
-      // 記号比較に失敗しても数値比較へ
+    } catch (e) {
+      console.error("Error in symbolic comparison:", e);
     }
-
-    // 2) 数値比較：差そのものを各点で評価（左右のズレを回避）
-    const samples = [-2, -1.1, -0.5, -0.2, 0.1, 0.5, 1, 2, 3];
-    let total = 0,
-      match = 0;
-    const v = (variable || "x").trim();
-
-    for (const x of samples) {
-      try {
-        const diffExpr = `simplify(((${correctStr})) - ((${userStr})))`;
-        const cmd = `float(subst((${diffExpr}), ${v}, (${x})))`;
-        const raw = Algebrite.run(cmd);
-        const val = Number(String(raw).replace(/\s+/g, ""));
-        if (Number.isFinite(val)) {
-          total++;
-          const tol = 1e-6 + 1e-6 * Math.max(1, Math.abs(val));
-          if (Math.abs(val) <= tol) match++;
-        }
-      } catch {
-        // このサンプル点は無視
-      }
-    }
-
-    const ratio = total ? match / total : 0;
-    const MIN_VALID = 5,
-      OK_RATIO = 0.999,
-      ALMOST_RATIO = 0.8;
-
-    if (total >= MIN_VALID && ratio >= OK_RATIO) {
-      return {
-        ok: true,
-        almost: false,
-        method: "numeric",
-        ratio,
-        total,
-        match,
-      };
-    }
-    if (ratio >= ALMOST_RATIO) {
-      return {
-        ok: false,
-        almost: true,
-        method: "numeric",
-        ratio,
-        total,
-        match,
-      };
-    }
-    return { ok: false, almost: false, method: "numeric", ratio, total, match };
   };
 
   const grade = () => {
@@ -269,7 +218,7 @@ export default function App() {
         console.log("[grade/diff] user(simplified)   =", user); //Debug log
         console.log("[grade/diff] correct(simplified)=", correct); //Debug log
 
-        const { ok, almost, method, ratio } = symbolicOrNumericEqual(
+        const { ok, method } = symbolicOrNumericEqual(
           user,
           correct
         );
@@ -278,19 +227,12 @@ export default function App() {
           setVerdictMessage(
             `正解 (${method === "symbolic" ? "記号的に一致" : "数値的に一致"})`
           );
-        } else if (almost) {
-          setVerdict("almost");
-          setVerdictMessage(
-            `ほぼ正解 (数値比較一致率 ${(ratio * 100).toFixed(0)}%)`
-          );
         } else {
           const mult = detectConstantMultiple(user, correct, variable);
           if (mult.isMultiple) {
             setVerdict("wrong");
             setVerdictMessage(
-              `不正解です。ただし「定数倍」関係です。（あなた = ${mult.k.toPrecision(
-                4
-              )} * 模範, 検証 ${mult.support}）`
+              `不正解です。ただし定数倍の関係です。`
             );
           } else {
             setVerdict("wrong");
@@ -325,20 +267,11 @@ export default function App() {
               method === "symbolic" ? "記号的" : "数値的"
             }に一致。定数差は許容)`
           );
-        } else if (almost) {
-          setVerdict("almost");
-          setVerdictMessage(
-            `ほぼ正解 (数値比較一致率 ${(ratio * 100).toFixed(0)}%)`
-          );
         } else {
           const mult = detectConstantMultiple(dUser, dCorrect, variable);
           if (mult.isMultiple) {
             setVerdict("wrong");
-            setVerdictMessage(
-              `不正解です。導関数が定数倍の関係です。（あなた = ${mult.k.toPrecision(
-                4
-              )} * 模範, 検証 ${mult.support}）`
-            );
+            setVerdictMessage(`不正解です。ただし、定数倍の関係です。`);
           } else {
             setVerdict("wrong");
             setVerdictMessage(
