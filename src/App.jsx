@@ -3,6 +3,7 @@ import Algebrite from "algebrite";
 import Keypad from "./components/FunctionKeypad.jsx";
 import "./App.css";
 import MathView from "./components/MathView.jsx";
+import calcLogic from "./utils/calcLogic.js";
 
 export default function App() {
   const [expression, setExpression] = useState("x^2 + sin(x)");
@@ -107,91 +108,6 @@ export default function App() {
     }
   };
 
-  const nearlyEqual = (a, b, atol = 1e-6, rtol = 1e-6) => {
-    if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
-    const diff = Math.abs(a - b);
-    const tol = atol + rtol * Math.max(1, Math.abs(a), Math.abs(b));
-    return diff <= tol;
-  };
-
-  const evaluateAt = (expressionStr, xVal) => {
-    try {
-      const v = /^[A-Za-z]\w*$/.test((variable || "").trim())
-        ? (variable || "x").trim()
-        : "x";
-      const cmd = `float(subst((${expressionStr}), ${v}, (${xVal})))`;
-      const raw = Algebrite.run(cmd);
-      const num = Number(String(raw).replace(/\s+/g, ""));
-      return Number.isFinite(num) ? num : NaN;
-    } catch {
-      return NaN;
-    }
-  };
-
-  const evaluateDiffAt = (userStr, correctStr, xVal) => {
-    try {
-      const v = (variable || "x").trim();
-      const diffExpr = `simplify(((${correctStr})) - ((${userStr})))`;
-      const cmd = `float(subst((${diffExpr}), ${v}, (${xVal})))`;
-      const raw = Algebrite.run(cmd);
-      const num = Number(String(raw).replace(/\s+/g, ""));
-      return Number.isFinite(num) ? num : NaN;
-    } catch {
-      return NaN;
-    }
-  };
-
-  const detectConstantMultiple = (userStr, correctStr) => {
-    // 変数名の安全化
-    const v = /^[A-Za-z]\w*$/.test((variable || "").trim())
-      ? (variable || "x").trim()
-      : "x";
-
-    // 0) 記号的チェック：d( (u/c), v ) == 0 なら「定数倍」
-    //   例外: c=0 の点は無視。比の導関数が 0 なら定数。
-    try {
-      const ratioExpr = `simplify(((${userStr})) / ((${correctStr})))`;
-      const dRatio = Algebrite.run(`simplify(d((${ratioExpr}), ${v}))`).trim();
-      if (dRatio === "0" || dRatio === "0.0") {
-        return { isMultiple: true, k: 1, support: "symbolic" };
-      } else {
-        return { isMultiple: false };
-      }
-    } catch (e) {
-      console.error("Error in symbolic constant multiple detection:", e);
-    }
-  };
-
-  const symbolicOrNumericEqual = (userStr, correctStr) => {
-    // 1) 記号比較：差が 0 なら即OK
-    try {
-      const diff = Algebrite.run(
-        `simplify(((${correctStr})) - ((${userStr})))`
-      ).trim();
-      if (diff === "0" || diff === "0.0") {
-        return {
-          ok: true,
-          almost: false,
-          method: "symbolic",
-          ratio: 1,
-          total: null,
-          match: null,
-        };
-      } else {
-        return {
-          ok: false,
-          almost: false,
-          method: "symbolic",
-          ratio: 0,
-          total: null,
-          match: null,
-        };
-      }
-    } catch (e) {
-      console.error("Error in symbolic comparison:", e);
-    }
-  };
-
   const grade = () => {
     setVerdict(null);
     setVerdictMessage("");
@@ -218,7 +134,7 @@ export default function App() {
         console.log("[grade/diff] user(simplified)   =", user); //Debug log
         console.log("[grade/diff] correct(simplified)=", correct); //Debug log
 
-        const { ok, method } = symbolicOrNumericEqual(
+        const { ok, method } = calcLogic.symbolicOrNumericEqual(
           user,
           correct
         );
@@ -228,7 +144,7 @@ export default function App() {
             `正解 (${method === "symbolic" ? "記号的に一致" : "数値的に一致"})`
           );
         } else {
-          const mult = detectConstantMultiple(user, correct, variable);
+          const mult = calcLogic.detectConstantMultiple(user, correct, variable);
           if (mult.isMultiple) {
             setVerdict("wrong");
             setVerdictMessage(
@@ -256,7 +172,7 @@ export default function App() {
           `simplify(d((${userAnswer}), ${variable}))`
         );
 
-        const { ok, almost, method, ratio } = symbolicOrNumericEqual(
+        const { ok, almost, method, ratio } = calcLogic.symbolicOrNumericEqual(
           dUser,
           dCorrect
         );
@@ -268,7 +184,7 @@ export default function App() {
             }に一致。定数差は許容)`
           );
         } else {
-          const mult = detectConstantMultiple(dUser, dCorrect, variable);
+          const mult = calcLogic.detectConstantMultiple(dUser, dCorrect, variable);
           if (mult.isMultiple) {
             setVerdict("wrong");
             setVerdictMessage(`不正解です。ただし、定数倍の関係です。`);
@@ -300,7 +216,7 @@ export default function App() {
         );
         return;
       }
-      if (nearlyEqual(fUser, fCorrect)) {
+      if (calcLogic.nearlyEqual(fUser, fCorrect)) {
         setVerdict("correct");
         setVerdictMessage("正解 (数値的に一致)");
       } else {
