@@ -1,4 +1,4 @@
-import {derivative, integral, multiply, divide, sqrt, log, inverse, limit, limsup, liminf } from '../../utils/calcLogic';
+import {derivative, integral, multiply, divide, sqrt, log, inverse, limit, limsup, liminf } from '../../utils/gameMath.js';
 
 export const cards = [
     //-------------------
@@ -71,7 +71,7 @@ export const cards = [
         target: "all",
         multipleAllowed: false,
         description: "場の基底すべてをxで一回微分",
-        effect: (func) => derivative(func, 'x'),
+        effect: (func) => derivative(func, 'x', 1),
     },
     {
         id: "operator-laplacian",
@@ -91,7 +91,7 @@ export const cards = [
         target: "single",
         multipleAllowed: true,
         description: "基底の一つをxで微分する（同ターンに複数使用可）",
-        effect: (func) => derivative(func, 'x'),
+        effect: (func) => derivative(func, 'x', 1),
     },
     {
         id: "operator-integral",
@@ -111,7 +111,7 @@ export const cards = [
         target: "single",
         multipleAllowed: true,
         description: "基底一つに対して関数カードを掛け算",
-        effect: (func1, func2) => multiple(func1, func2),
+        effect: (func1, func2) => multiply(func1, func2),
     },
     {
         id: "operator-divide",
