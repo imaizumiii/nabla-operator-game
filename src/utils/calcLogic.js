@@ -1,3 +1,4 @@
+//src/utils/calcLogic.js
 import Algebrite from "algebrite";
 
 const nearlyEqual = (a, b, atol = 1e-6, rtol = 1e-6) => {
