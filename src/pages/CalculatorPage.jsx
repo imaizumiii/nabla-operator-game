@@ -1,7 +1,7 @@
 import React from "react";
-import useCalculatorLogic from "./useCalculatorLogic";
-import MathView from "../../components/MathView";
-import FunctionKeypad from "../../components/FunctionKeypad";
+import useCalculatorLogic from "../features/calclator/useCalculatorLogic.js"
+import MathView from "../components/MathView.jsx";
+import FunctionKeypad from "../components/FunctionKeypad.jsx";
 
 export default function CalculatorPage() {
   const {

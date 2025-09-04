@@ -1,8 +1,9 @@
 //src/App.jsx
 import "./App.css";
-import CalculatorPage from "./features/calclator/CalculatorPage.jsx";
+import CalculatorPage from "./pages/CalculatorPage.jsx";
+import GamePage from "./pages/GamePage.jsx"
 import { BrowserRouter as Router, Routes, Route, Link }  from "react-router-dom";
-import GamePage from "./features/game/GamePage.jsx";
+
 
 export default function App() {
   return (
