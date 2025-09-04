@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import FieldView from '../features/game/components/FieldView';
+import ControlPanel from '../features/game/components/ControlPanel';
 
 const initialField = [
   { id: "func-1", name: "1", display: "1", type: "function", func: "1" },
@@ -15,6 +16,20 @@ export default function GamePage() {
   const handleSelectField = (fieldId) => {
     setSelectedFieldId(fieldId === selectedFieldId ? null : fieldId); //toggle
   };
+
+  const handleApplyOperator = (operator, targetId) => {
+    setField(prev =>
+      prev.map(card => {
+        if (card.id !== targetId) return card;
+
+        let newDisplay = card.display;
+        if (operator === 'diff') {
+          newDisplay = `d/dx ${newDisplay}`;
+        }
+        return { ...card, display: newDisplay };
+      })
+    )
+  }
 
   if (status === "idle") {
     return (
@@ -32,6 +47,10 @@ export default function GamePage() {
         <div className='p-2 space-y-4'>
           <h2 className='text-lg font-semibold'>場のカード</h2>
           <FieldView field={field} selectedFieldId={selectedFieldId} onSelectField={handleSelectField} />
+          <ControlPanel
+            selectedFieldId={selectedFieldId}
+            onApplyOperator={handleApplyOperator}
+          />
         </div>
       </div>
     );

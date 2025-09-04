@@ -1,4 +1,4 @@
-import {derivative, integral, multiply, divide, sqrt, log, inverse, limit, limsup, liminf } from '../../utils/gameMath.js';
+import {derivative, integral, multiply, divide, sqrt, log, inverse, limit, limsup, liminf } from '../../../utils/gameMath.js';
 
 export const cards = [
     //-------------------
