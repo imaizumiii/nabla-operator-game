@@ -1,14 +1,17 @@
-export function derivative(func, variable = "x", order = 1) {
-  //仮
-  if (func === "x" && order === 1) return "1";
-  if (func === "x^2" && order === 1) return "2x";
-  if (func === "x^2" && order === 2) return "2";
-  if (func === "sin(x)" && order === 1) return "cos(x)";
-  if (func === "cos(x)" && order === 1) return "-sin(x)";
-  if (func === "exp(x)" && order === 1) return "exp(x)";
+import Algebrite from 'algebrite';
 
-  return `d^${order}/${variable}^${order}(${func})`;
+export function derivative(func, variable="x", order=1){
+  try {
+    let expression = func;
+    for(let i=0; i<order; i++){
+      expression = Algebrite.run(`(${expression}, ${variable})`).toString();
+    }
+    return expression;
+  } catch (error){
+    console.error("微分計算エラー:",error);
+  }
 }
+
 
 export function integral(func, variable = "x") {
   //仮
