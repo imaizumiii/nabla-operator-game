@@ -1,35 +1,46 @@
-import React from "react";
-import { cards } from '../data/cards';
+import { useState } from "react";
+import { cards } from "../data/cards.js";
 import { BlockMath } from "react-katex";
 
-const operators = cards.filter(card => card.type === 'operator');
+export default function ControlPanel({ selectedFieldId, onApplyOperator, onExecuteOperator }) {
+    const [selectedOperatorId, setSelectedOperatorId] = useState(null);
 
-export default function ControlPanel({ selectedFieldId, onApplyOperator }) {
-    const [selectedOperator, setSelectedOperator] = React.useState(null);
+    const operatorCards = cards.filter(card => card.type === "operator");
+
+    const handleSelectOperator = (operator) => {
+        setSelectedOperatorId(operator.id);
+        onApplyOperator(operator);
+    }
 
     const handleApply = () => {
-        if (selectedFieldId && selectedOperator) {
-            onApplyOperator(selectedOperator, selectedFieldId);
-            setSelectedOperator(null);
+        if (selectedFieldId && selectedOperatorId) {
+            onExecuteOperator();
         }
     };
 
     return (
-        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow-md space-y-2">
-            <h2 className="text-md font-semibold text-gray-900 dark:text-white">操作パネル</h2>
-            <div className="flex space-x-2">
-                {operators.map(operator => (
-                    <button key={operator.id} className={`px-3 py-1 rounded border text-sm transition ${selectedOperator === operator.name ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white'}`}
-                        onClick={() => setSelectedOperator(operator.name)}>
+        <div className="space-y-2">
+            <h3 className="font-semibold">演算カード</h3>
+            <div className="grid grid-cols-4 gap-2">
+                {operatorCards.map(operator => (
+                    <div
+                        key={operator.id}
+                        className={`p-2 border rounded cursor-pointer text-center
+                        ${selectedOperatorId === operator.id ? 'bg-blue-100 border-blue-500' : 'hover:bg-gray-100'}`}
+                        onClick={() => handleSelectOperator(operator)}
+                    >
                         <BlockMath math={operator.display} />
-                    </button>
+                    </div>
                 ))}
-                <button className="mt-2 px-4 py-1 bg-green-500 text-white rounded disabled:opacity-50"
-                    onClick={handleApply}
-                    disabled={!selectedFieldId || !selectedOperator}>
-                        適用
-                    </button>
             </div>
+            <button
+                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                onClick={handleApply}
+                disabled={!selectedFieldId || !selectedOperatorId}
+            >
+                適用
+            </button>
         </div>
     )
+
 }

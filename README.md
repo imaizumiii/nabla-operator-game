@@ -64,24 +64,66 @@ lim_{x→0} log x は lim_{x→+0} log xということで許容する。
 f^{-1} は単調で可逆な形（ax+b, exp, log, 奇数冪など）に限定すると実装・裁定が楽です。　いったんはこれで様子見する。
 exp x に f^{-1} → log(x) となる。
 
-
-```
-UI上での選択操作の流れ
-手札選択 - [関数or演算]
-        |- [関数] - [相手or自分]-[基底を追加]
-        |- [演算] - [単体で使うor複数で使う]
-                    |- [単体]-[全体に対してor基底一つに対して]
-                                |- [全体]-[自分or相手]
-                                            |- [自分]-[自分の場の基底全てに対して演算を行う]
-                                            |- [相手]-[相手の場の基底全てに対して演算を行う]
-                [基底一つ]-[基底を選択]-[その基底に対し演算を行う]
-            [複数]-[微分積分or x,/]
-                [微分積分]-[同種類のカードを何枚使うか選択]
-                [x,/]-[同時に使う関数を選択]-[計算する順番を並び替える]
-
-```
+## 使用技術
+仮：SymPy
 
 ```mermaid
-flowchart LR;
-A(start)-->B
+flowchart TD;
+A(手札選択)-->B
+B{関数or演算 ?} -- 関数 --> C(相手or自分) --> D(基底を追加)
+B{関数or演算 ?} -- 演算 --> E{単体で使うor複数で使う}
+E -- 単体 --> F{全体or一つ対して}
+F -- 全体 -->G(自分or相手) -->H(自分or相手の場の基底全てに演算)
+F -- 一つ -->I(基底を選択) -->J(選択した基底に演算)
+E -- 複数 --> K{微分積分 or x,/}
+K--微分積分-->L(基底を選択、何枚使うか選ぶ)-->M(選んだ基底に選んだ枚数回演算)
+K--（x,/）-->N(基底を選択、同時に使う関数を選択)-->O(計算する順番を並び替え)-->P(演算)
+```
+
+ファイル構造
+```
+.
+├── README.md
+├── __pycache__
+│   └── main.cpython-312.pyc
+├── eslint.config.js
+├── index.html
+├── main.py
+├── memo.txt
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   └── vite.svg
+├── src
+│   ├── App.css
+│   ├── App.jsx
+│   ├── components
+│   │   ├── FunctionKeypad.jsx
+│   │   └── MathView.jsx
+│   ├── features
+│   │   ├── calclator
+│   │   │   └── useCalculatorLogic.js
+│   │   └── game
+│   │       ├── components
+│   │       │   ├── ControlPanel.jsx
+│   │       │   ├── FieldView.jsx
+│   │       │   └── HandView.jsx
+│   │       └── data
+│   │           ├── cards.js
+│   │           ├── limitApi.js
+│   │           └── operators.js
+│   ├── index.css
+│   ├── main.jsx
+│   ├── pages
+│   │   ├── CalculatorPage.jsx
+│   │   └── GamePage.jsx
+│   └── utils
+│       └── calcLogic.js
+├── tailwind.config.js
+├── tree.txt
+└── vite.config.js
+
+12 directories, 29 files
+
 ```
