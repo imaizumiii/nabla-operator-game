@@ -65,7 +65,13 @@ f^{-1} は単調で可逆な形（ax+b, exp, log, 奇数冪など）に限定す
 exp x に f^{-1} → log(x) となる。
 
 ## 使用技術
-仮：SymPy
+SymPy
+fastapi
+uvicorn
+pydantic
+```
+pip install fastapi uvicorn sympy pydantic
+```
 
 ```mermaid
 flowchart TD;
@@ -80,7 +86,7 @@ K--微分積分-->L(基底を選択、何枚使うか選ぶ)-->M(選んだ基底
 K--（x,/）-->N(基底を選択、同時に使う関数を選択)-->O(計算する順番を並び替え)-->P(演算)
 ```
 
-ファイル構造
+## ファイル構造
 ```
 .
 ├── README.md
