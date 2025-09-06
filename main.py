@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from sympy import Symbol, sympify, limit, oo, latex, AccumBounds
+from sympy import Symbol, sympify, limit, oo, latex, AccumBounds, solve, diff, integrate
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -13,14 +13,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class LimitRequest(BaseModel):
+class CalcRequest(BaseModel):
     expr: str
     variable: str = 'x'
     point: str = "oo"
     boundValue: str = "max"
 
 @app.post("/limit")
-async def compute_limit(data: LimitRequest):
+async def compute_limit(data: CalcRequest):
     expr = sympify(data.expr)
     variable = Symbol(data.variable)
     point = data.point
@@ -52,3 +52,63 @@ async def compute_limit(data: LimitRequest):
             return {"result": str(result), "display":latex_result}
     except Exception as e:
         return {"result": "定義不能"}
+
+@app.post("/inverse")
+async def compute_inverse(data: CalcRequest):
+    expr = sympify(data.expr)
+    variable = Symbol(data.variable)
+    
+    try:
+        result = solve(expr - Symbol('y'), variable)
+        if not result:
+            return {"result": "解なし", "display": ""}
+        
+        # デフォルトでは最初の解を使用
+        if len(result) == 1:
+            result = result[0].subs(Symbol('y'), Symbol(data.variable))
+        else:
+            result = result[1].subs(Symbol('y'), Symbol(data.variable))
+        latex_result = latex(result, inv_trig_style="full")
+        print("result: ", result, "latex_result: ", latex_result)
+        return {
+            "result": str(result),
+            "display": latex_result
+        }
+    except Exception as e:
+        return {"result": "逆関数を求められません", "display": ""}
+    
+@app.post("/derivative")
+async def compute_derivative(data: CalcRequest):
+    expr = sympify(data.expr)
+    variable = Symbol(data.variable)
+    
+    try:
+        result = diff(expr, variable)
+        if not result:
+            return {"result": "解なし", "display": ""}
+
+        latex_result = latex(result)
+        return {
+            "result": str(result),
+            "display": latex_result
+        }
+    except Exception as e:
+        return {"result": "微分を求められません", "display": ""}
+    
+@app.post("/integrate")
+async def compute_integrate(data: CalcRequest):
+    expr = sympify(data.expr)
+    variable = Symbol(data.variable)
+    
+    try:
+        result = integrate(expr, variable)
+        if not result:
+            return {"result": "解なし", "display": ""}
+                    
+        latex_result = latex(result)
+        return {
+            "result": str(result),
+            "display": latex_result
+        }
+    except Exception as e:
+        return {"result": "積分を求められません", "display": ""}

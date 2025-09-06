@@ -1,4 +1,4 @@
-import {derivative, integral, multiply, divide, sqrt, log, inverse, limit, limsup, liminf } from './operators.js';
+import {derivative, integrate, multiply, divide, sqrt, log, inverse, limit } from './operators.js';
 
 export const cards = [
     //-------------------
@@ -101,7 +101,7 @@ export const cards = [
         target: "single",
         multipleAllowed: true,
         description: "基底の一つをで積分する（同ターンに複数使用可）",
-        effect: (func) => integral(func, 'x'),
+        effect: (func) => integrate(func, 'x'),
     },
     {
         id: "operator-multiply",
@@ -136,7 +136,7 @@ export const cards = [
     {
         id: "operator-inverse",
         name: "inverse",
-        display: "\\f^{-1}",
+        display: "f^{-1}",
         type: "operator",
         target: "single",
         multipleAllowed: false,

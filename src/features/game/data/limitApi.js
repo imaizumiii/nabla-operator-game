@@ -1,18 +1,34 @@
-export async function getLimitResult(expr, variable, point, boundValue) {
+const BASE_URL = "http://localhost:8000";
+const HEADERS = {
+    "Content-Type": "application/json"
+}
+
+async function postToEndpoint(endpoint, payload) {
     try {
-        const response = await fetch("http://localhost:8000/limit", {
+        const response = await fetch(`${BASE_URL}${endpoint}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ expr, variable, point: String(point), boundValue }), // ← ここが大事
+            headers: HEADERS,
+            body: JSON.stringify(payload),
         });
         const data = await response.json();
-        console.log(`data.latex:${data.display}`);
         return data;
-
     } catch (error) {
-        console.error("API呼び出しエラー:", error);
-        return "エラー";
+        console.error(`[${endpoint}] API呼び出しエラー:`, error);
     }
+}
+
+export async function getDiffResult(expr, variable) {
+    return postToEndpoint("/derivative", { expr, variable });
+}
+
+export async function getIntegrateResult(expr, variable) {
+    return postToEndpoint("/integrate", { expr, variable });
+}
+
+export async function getLimitResult(expr, variable, point, boundValue) {
+    return postToEndpoint("/limit", {expr, variable, point: String(point), boundValue });
+}
+
+export async function getInverseResult(expr, variable) {
+    return postToEndpoint("/inverse", { expr, variable });
 }
