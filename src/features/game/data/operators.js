@@ -67,14 +67,10 @@ export function inverse(func, variable = "x") {
     return `inverse(${func})`;
 }
 
-export async function limit(func, variable = "x", point = "0") {
-    let target = point;
-    if (point === "oo" || point === "+oo") { target = "oo" }
-    else if (point === "-oo") { target = "-oo" }
+export async function limit(func, variable = "x", point = "0", boundValue = "plane") {
     try {
-        const result = await getLimitResult(func, variable, target);
-        console.log(`result: ${result}`);
-        return result
+        const result = await getLimitResult(func, variable, point, boundValue);
+        return result.display
     } catch (error) {
         console.error("limit API呼び出しエラー:", error);
     }

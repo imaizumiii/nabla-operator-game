@@ -3,9 +3,14 @@ import FieldView from "../features/game/components/FieldView";
 import ControlPanel from "../features/game/components/ControlPanel"
 
 const initialField = [
-  { id: "func-1", name: "1", display: "1", type: "function", func: "1" },
-  { id: "func-2", name: "x", display: "x", type: "function", func: "x" },
-  { id: "func-3", name: "x^2", display: "x^2", type: "function", func: "x^2" },
+  { id: "func-1", name: "sin(x)/x", display: "sin(x)/x", type: "function", func: "sin(x)/x" },
+  { id: "func-2", name: "x^2", display: "x^2", type: "function", func: "x^2" },
+  { id: "func-3", name: "exp(x)", display: "e^x", type: "function", func: "exp(x)" },
+  { id: "func-4", name: "sin(x)", display: "sin(x)", type: "function", func: "sin(x)" },
+  { id: "func-5", name: "log(x)", display: "log(x)", type: "function", func: "log(x)" },
+  { id: "func-6", name: "x-x*log(x)", display: "x-x*log(x)", type: "function", func: "x-x*log(x)" },
+
+
 ];
 
 export default function GamePage() {

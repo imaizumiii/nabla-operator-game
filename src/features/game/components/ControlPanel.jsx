@@ -26,7 +26,7 @@ export default function ControlPanel({ selectedFieldId, onApplyOperator, onExecu
                     <div
                         key={operator.id}
                         className={`p-2 border rounded cursor-pointer text-center
-                        ${selectedOperatorId === operator.id ? 'bg-blue-100 border-blue-500' : 'hover:bg-gray-100'}`}
+                        ${selectedOperatorId === operator.id ? 'bg-blue-100 dark:bg-blue-800 border-blue-500' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                         onClick={() => handleSelectOperator(operator)}
                     >
                         <BlockMath math={operator.display} />

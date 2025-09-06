@@ -15,7 +15,7 @@ export default function FieldView({ field, selectedFieldId, onSelectField }) {
           key={card.id}
           onClick={() => handleSelect(card.id)}
           className={`p-2 border rounded cursor-pointer text-center
-            ${selectedFieldId === card.id ? "bg-blue-100 border-blue-500" : "hover:bg-gray-100"}
+            ${selectedFieldId === card.id ? "bg-blue-100 dark:bg-blue-800 border-blue-500" : "hover:bg-gray-100 dark:hover:bg-gray-700"}
             `}
         >
           <BlockMath math={card.display} />
