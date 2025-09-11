@@ -5,7 +5,7 @@ import ControlPanel from "../features/game/components/ControlPanel"
 const initialField = [
   { id: "func-1", name: "sin(x)/x", display: "\\dfrac{\\sin\\left(x\\right)}{x}", type: "function", func: "sin(x)/x" },
   { id: "func-2", name: "x^2", display: "x^2", type: "function", func: "x^2" },
-  { id: "func-3", name: "exp(x)", display: "e^x", type: "function", func: "exp(x)" },
+  { id: "func-3", name: "-exp(x)", display: "-e^x", type: "function", func: "-exp(x)" },
   { id: "func-4", name: "sin(x)", display: "\\sin\\left(x\\right)", type: "function", func: "sin(x)" },
   { id: "func-5", name: "log(x)", display: "\\log\\left(x\\right)", type: "function", func: "log(x)" },
   { id: "func-6", name: "x-x*log(x)", display: "x-x\\log\\left(x\\right)", type: "function", func: "x-x*log(x)" },
@@ -19,17 +19,17 @@ export default function GamePage() {
   const [selectedFieldId, setSelectedFieldId] = useState(null);
   const [selectedOperator, setSelectedOperator] = useState(null);
 
-  const applyOperator = async (operator, fieldId) => {
+  const onApplyOperator = async (operator, fieldId) => {
     if (!operator || !fieldId) return;
 
     const newField = await Promise.all(
-      field.map(async card => {
-        if (card.id !== fieldId) return card;
+      field.map(async operator => {
+        if (operator.id !== fieldId) return operator;
 
-        const newFunc = await operator.effect(card.func);
+        const newFunc = await operator.effect(operator.name);
         return {
-          ...card,
-          func: String(newFunc.result),
+          ...operator,
+          name: String(newFunc.result),
           display: String(newFunc.display),
         };
       })
@@ -37,9 +37,19 @@ export default function GamePage() {
 
     setField(newField);
   };
+
+  const handleAddFunc = (func) => {
+    if (!func) return;
+    const newFunc = {
+      ...func,
+      name: String(func.name),
+      display: String(func.display),
+    };
+    setField([...field, newFunc]);
+    }
   
   const handleExecuteOperator = async () => {
-    await applyOperator(selectedOperator, selectedFieldId);
+    await onApplyOperator(selectedOperator, selectedFieldId);
   }
 
   if (status === "idle") {
@@ -56,6 +66,7 @@ export default function GamePage() {
           <ControlPanel
             selectedFieldId={selectedFieldId}
             onApplyOperator={setSelectedOperator}
+            handleAddFunc={handleAddFunc}
             onExecuteOperator={handleExecuteOperator}
           />
         </div>

@@ -23,7 +23,7 @@ export const cards = [
     {
         id: "function-exp",
         name: "exp",
-        display: "\\e^x",
+        display: "e^x",
         type: "function",
         description: "基底として場に追加できる",
         effect: () => "exp(x)",
@@ -31,7 +31,7 @@ export const cards = [
     {
         id: "function-x",
         name: "x",
-        display: "\\x",
+        display: "x",
         type: "function",
         description: "基底として場に追加できる",
         effect: () => "x",
@@ -39,7 +39,7 @@ export const cards = [
     {
         id: "function-x^2",
         name: "x^2",
-        display: "\\x^2",
+        display: "x^2",
         type: "function",
         description: "基底として場に追加できる",
         effect: () => "x^2",
@@ -47,7 +47,7 @@ export const cards = [
     {
         id: "function-1",
         name: "1",
-        display: "\\1",
+        display: "1",
         type: "function",
         // description: "基底として場に追加できる",
         effect: () => "1",
@@ -55,7 +55,7 @@ export const cards = [
     {
         id: "function-0",
         name: "0",
-        display: "\\0",
+        display: "0",
         type: "function",
         // description: "基底として場に追加できる",
         effect: () => "0",

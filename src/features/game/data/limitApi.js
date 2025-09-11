@@ -32,3 +32,11 @@ export async function getLimitResult(expr, variable, point, boundValue) {
 export async function getInverseResult(expr, variable) {
     return postToEndpoint("/inverse", { expr, variable });
 }
+
+export async function getSqrtResult(expr) {
+    return postToEndpoint("/sqrt", { expr });
+}
+
+export async function getLogResult(expr) {
+    return postToEndpoint("/log", { expr });
+}

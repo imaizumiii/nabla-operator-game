@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from sympy import Symbol, sympify, limit, oo, latex, AccumBounds, solve, diff, integrate
+from sympy import Symbol, sympify, limit, oo, latex, AccumBounds, solve, diff, integrate, sqrt, log
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -112,3 +112,41 @@ async def compute_integrate(data: CalcRequest):
         }
     except Exception as e:
         return {"result": "積分を求められません", "display": ""}
+    
+@app.post("/sqrt")
+async def compute_sqrt(data:CalcRequest):
+    x = Symbol(data.variable, positive = True)      
+    expr = sympify( data.expr,locals={data.variable: x})
+
+    try:
+        result = sqrt(expr)
+        print(result)
+        if not result:
+            return {"result": "解なし", "display": ""}
+        
+        latex_result = latex(result)
+        return {"result": str(result), "display": latex_result}
+    except Exception as e:
+        return {"result": "平方根を求められません", "display": ""}
+
+@app.post("/log")
+async def compute_log(data:CalcRequest):
+    x = Symbol(data.variable, positive = True)      
+    expr = sympify( data.expr,locals={data.variable: x})
+
+    try:
+        result = log(expr)
+        print(result)
+        if not result:
+            return {"result": "解なし", "display": ""}
+        
+        latex_result = latex(result)
+        return {"result": str(result), "display": latex_result}
+    except Exception as e:
+        return {"result": "平方根を求められません", "display": ""}
+        
+
+    
+    
+            
+        

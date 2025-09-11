@@ -2,9 +2,11 @@ import { useState } from "react";
 import { cards } from "../data/cards.js";
 import { BlockMath } from "react-katex";
 
-export default function ControlPanel({ selectedFieldId, onApplyOperator, onExecuteOperator }) {
+export default function ControlPanel({ selectedFieldId, onApplyOperator, handleAddFunc, onExecuteOperator }) {
     const [selectedOperatorId, setSelectedOperatorId] = useState(null);
+    const [selectedFuncId, setSelectedFuncId] = useState(null);
 
+    const funcCards = cards.filter(card => card.type === "function")
     const operatorCards = cards.filter(card => card.type === "operator");
 
     const handleSelectOperator = (operator) => {
@@ -12,7 +14,11 @@ export default function ControlPanel({ selectedFieldId, onApplyOperator, onExecu
         onApplyOperator(operator);
     }
 
-    const handleApply = () => {
+    const handleSelectFunc = (func) => {
+        setSelectedFuncId(func.id)
+    }
+
+    const handleApplyOperator = () => {
         if (selectedFieldId && selectedOperatorId) {
             onExecuteOperator();
         }
@@ -20,6 +26,29 @@ export default function ControlPanel({ selectedFieldId, onApplyOperator, onExecu
 
     return (
         <div className="space-y-2">
+            <h3 className="font-semibold">関数カード</h3>
+            <div className="grid grid-cols-4 gap-2">
+                {funcCards.map(func => (
+                    <div
+                        key={func.id}
+                        className={`p-2 border rounded cursor-pointer text-center
+                        ${selectedFuncId === func.id ? 'bg-blue-100 dark:bg-blue-800 border-blue-500' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                        onClick={() => handleSelectFunc(func)}
+                    >
+                        <BlockMath math={func.display} />
+                    </div>
+                ))}
+            </div>
+            <button
+                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                onClick={ () => {
+                    const selectedFunc = funcCards.find(f => f.id === selectedFuncId);
+                    handleAddFunc(selectedFunc)
+                }}
+                disabled={!selectedFuncId}
+            >
+                追加
+            </button>
             <h3 className="font-semibold">演算カード</h3>
             <div className="grid grid-cols-4 gap-2">
                 {operatorCards.map(operator => (
@@ -35,7 +64,7 @@ export default function ControlPanel({ selectedFieldId, onApplyOperator, onExecu
             </div>
             <button
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
-                onClick={handleApply}
+                onClick={handleApplyOperator}
                 disabled={!selectedFieldId || !selectedOperatorId}
             >
                 適用

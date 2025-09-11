@@ -1,5 +1,5 @@
 import Algebrite from 'algebrite'
-import { getInverseResult, getLimitResult, getDiffResult, getIntegrateResult } from './limitApi';
+import { getInverseResult, getLimitResult, getDiffResult, getIntegrateResult, getSqrtResult, getLogResult } from './limitApi';
 
 export async function derivative(func, variable = "x", order = 1) {
     try {
@@ -36,17 +36,20 @@ export function divide(numerator, denominator) { //複数演算は後回し
     return `(${numerator})/(${denominator})`;
 }
 
-export function sqrt(func) {
+export async function sqrt(func) {
     try {
-        return Algebrite.run(`sqrt(${func})`);
+        const result = await getSqrtResult(func);
+        console.log("do sqrt");
+        return result;
     } catch (error) {
         console.error("ルート計算エラー:", error);
     }
 }
 
-export function log(func) {
+export async function log(func) {
     try {
-        return Algebrite.run(`log(${func})`);
+        const result = await getLogResult(func);
+        return result;
     } catch (error) {
         console.error("log計算エラー", error);
     }
