@@ -144,11 +144,7 @@ export default function GamePage() {
             justifyContent: "center", alignItems: "center",
             zIndex: 1000,
           }}>
-            <div style={{
-              backgroundColor: "white", padding: "2rem", borderRadius: "8px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.3)", textAlign: "center",
-              minWidth: "300px",
-            }}>
+            <div className="bg-white dark:bg-gray-800 text-black dark:text-white p-8 rounded-lg shadow-lg text-center min-w-[300px]">
               <p style={{ marginBottom: "1rem" }}>どちらの場に追加しますか？</p>
               <button
                 style={{ marginRight: "1rem" }}
@@ -175,11 +171,7 @@ export default function GamePage() {
             justifyContent: "center", alignItems: "center",
             zIndex: 1000,
           }}>
-            <div style={{
-              backgroundColor: "white", padding: "2rem", borderRadius: "8px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.3)", textAlign: "center",
-              minWidth: "300px",
-            }}>
+            <div className="bg-white dark:bg-gray-800 text-black dark:text-white p-8 rounded-lg shadow-lg text-center min-w-[300px]">
               <p style={{ marginBottom: "1rem" }}>誰に演算を適用しますか？</p>
               <button
                 style={{ marginRight: "1rem" }}

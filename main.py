@@ -61,7 +61,7 @@ async def compute_inverse(data: CalcRequest):
     
     try:
         result = solve(expr - Symbol('y'), variable)
-        if not result:
+        if not (result or "0"):
             return {"result": "解なし", "display": ""}
         
         # デフォルトでは最初の解を使用
@@ -88,7 +88,7 @@ async def compute_derivative(data: CalcRequest):
         result = expr
         for i in range(order):
             result = diff(result, variable)
-        if not result:
+        if not (result or "0"):
             return {"result": "解なし", "display": ""}
 
         latex_result = latex(result)
@@ -106,7 +106,7 @@ async def compute_integrate(data: CalcRequest):
     
     try:
         result = integrate(expr, variable)
-        if not result:
+        if not (result or "0"):
             return {"result": "解なし", "display": ""}
                     
         latex_result = latex(result)
@@ -125,7 +125,7 @@ async def compute_sqrt(data:CalcRequest):
     try:
         result = sqrt(expr)
         print(result)
-        if not result:
+        if not (result or "0"):
             return {"result": "解なし", "display": ""}
         
         latex_result = latex(result)
@@ -141,7 +141,7 @@ async def compute_log(data:CalcRequest):
     try:
         result = log(expr)
         print(result)
-        if not result:
+        if not (result or "0"):
             return {"result": "解なし", "display": ""}
         
         latex_result = latex(result)
