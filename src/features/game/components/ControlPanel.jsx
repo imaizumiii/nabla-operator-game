@@ -5,18 +5,19 @@ import { BlockMath } from "react-katex";
 export default function ControlPanel({ selectedFieldId, onApplyOperator, handleAddFunc, onExecuteOperator }) {
     const [selectedOperatorId, setSelectedOperatorId] = useState(null);
     const [selectedFuncId, setSelectedFuncId] = useState(null);
+    const [funcOwner, setFuncOwner] = useState("player");
 
-    const funcCards = cards.filter(card => card.type === "function")
+    const funcCards = cards.filter(card => card.type === "function");
     const operatorCards = cards.filter(card => card.type === "operator");
 
     const handleSelectOperator = (operator) => {
         setSelectedOperatorId(operator.id);
         onApplyOperator(operator);
-    }
+    };
 
     const handleSelectFunc = (func) => {
-        setSelectedFuncId(func.id)
-    }
+        setSelectedFuncId(func.id);
+    };
 
     const handleApplyOperator = () => {
         if (selectedFieldId && selectedOperatorId) {
