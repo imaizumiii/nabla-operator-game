@@ -22,8 +22,9 @@ export default function GamePage() {
   const [selectedOperator, setSelectedOperator] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingFunc, setPendingFunc] = useState(null);
+  const [modalOperatorTarget, setModalOperatorTarget] = useState(false);
 
-  const onApplyOperator = async (operator, target) => { 
+  const onApplyOperator = async (operator, target) => {
     if (!operator || !target) return;
 
     const { owner, id } = target;
@@ -32,8 +33,7 @@ export default function GamePage() {
 
     const newField = await Promise.all(
       sourceField.map(async card => {
-        if (card.id !== id) return card;
-
+        if (operator.target !== "all" && card.id !== id) return card;
         const newFunc = await operator.effect(card.name);
         return {
           ...card,
@@ -70,9 +70,32 @@ export default function GamePage() {
     setIsModalOpen(false);
   };
 
-  const handleExecuteOperator = async () => {
-    await onApplyOperator(selectedOperator, selectedField);
+  const handleExecuteOperator = async (owner) => {
+    if (!selectedOperator) return;
+    if (selectedOperator.target === "all") {
+      await onApplyOperator(selectedOperator, { owner });
+    } else {
+      await onApplyOperator(selectedOperator, selectedField);
+    }
   }
+
+  const handleApplyOperatorAll = async (owner) => {
+    const sourceField = owner === "player" ? playerField : opponentField;
+    const setField = owner === "player" ? setPlayerField : setOpponentField;
+
+    const newField = await Promise.all(
+      sourceField.map(async card => {
+        const newFunc = await selectedOperator.effect(card.name);
+        return {
+          ...card,
+          name: String(newFunc.result),
+          display: String(newFunc.display),
+        };
+      })
+    );
+    setField(newField);
+    setModalOperatorTarget(false);
+  };
 
   if (status === "idle") {
     return (
@@ -140,6 +163,37 @@ export default function GamePage() {
                 相手
               </button>
               <button onClick={() => { setIsModalOpen(false); setPendingFunc(null); }}>
+                キャンセル
+              </button>
+            </div>
+          </div>
+        )}
+        {modalOperatorTarget && (
+          <div style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+            justifyContent: "center", alignItems: "center",
+            zIndex: 1000,
+          }}>
+            <div style={{
+              backgroundColor: "white", padding: "2rem", borderRadius: "8px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.3)", textAlign: "center",
+              minWidth: "300px",
+            }}>
+              <p style={{ marginBottom: "1rem" }}>誰に演算を適用しますか？</p>
+              <button
+                style={{ marginRight: "1rem" }}
+                onClick={() => handleApplyOperatorAll("player")}
+              >
+                自分
+              </button>
+              <button
+                style={{ marginRight: "1rem" }}
+                onClick={() => handleApplyOperatorAll("opponent")}
+              >
+                相手
+              </button>
+              <button onClick={() => setModalOperatorTarget(false)}>
                 キャンセル
               </button>
             </div>

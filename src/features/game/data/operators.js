@@ -3,14 +3,11 @@ import { getInverseResult, getLimitResult, getDiffResult, getIntegrateResult, ge
 
 export async function derivative(func, variable = "x", order = 1) {
     try {
-        let result = func;
-        for (let i = 0; i < order; i++) {
-            result = await getDiffResult(func,variable);
-        }
+        const result = await getDiffResult(func, variable, order);
         return result;
     } catch (error) {
-        console.error("微分計算エラー:", error);
-    }
+    console.error("微分計算エラー:", error);
+}
 }
 
 export async function integrate(func, variable = 'x') {

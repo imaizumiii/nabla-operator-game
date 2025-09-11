@@ -16,6 +16,7 @@ app.add_middleware(
 class CalcRequest(BaseModel):
     expr: str
     variable: str = 'x'
+    order: int = 1
     point: str = "oo"
     boundValue: str = "max"
 
@@ -81,9 +82,12 @@ async def compute_inverse(data: CalcRequest):
 async def compute_derivative(data: CalcRequest):
     expr = sympify(data.expr)
     variable = Symbol(data.variable)
+    order = data.order
     
     try:
-        result = diff(expr, variable)
+        result = expr
+        for i in range(order):
+            result = diff(result, variable)
         if not result:
             return {"result": "解なし", "display": ""}
 

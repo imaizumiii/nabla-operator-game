@@ -5,12 +5,15 @@ import { BlockMath } from "react-katex";
 export default function ControlPanel({ selectedFieldId, onApplyOperator, handleRequestAddFunc, onExecuteOperator }) {
     const [selectedOperatorId, setSelectedOperatorId] = useState(null);
     const [selectedFuncId, setSelectedFuncId] = useState(null);
+    const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
 
     const funcCards = cards.filter(card => card.type === "function");
     const operatorAllCards = cards.filter(card => card.type === "operator" && card.target === "all");
     const operatorSingleTrueCards = cards.filter(card => card.type === "operator" && card.target === "single" && card.multipleAllowed);
     const operatorSingleFalseCards = cards.filter(card => card.type === "operator" && card.target === "single" && !card.multipleAllowed);
     const multiplierDividerCards = cards.filter(card => card.type === "multiplier" || card.type === "divider");
+
+    const selectedOperator = cards.find(card => card.id === selectedOperatorId);
 
     const handleSelectOperator = (operator) => {
         setSelectedOperatorId(operator.id);
@@ -22,7 +25,10 @@ export default function ControlPanel({ selectedFieldId, onApplyOperator, handleR
     };
 
     const handleApplyOperator = () => {
-        if (selectedFieldId && selectedOperatorId) {
+        if (!selectedOperator) return;
+        if (selectedOperator.target === "all") {
+            setIsTargetModalOpen(true);
+        } else if (selectedFieldId) {
             onExecuteOperator();
         }
     };
@@ -82,10 +88,34 @@ export default function ControlPanel({ selectedFieldId, onApplyOperator, handleR
             <button
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
                 onClick={handleApplyOperator}
-                disabled={!selectedFieldId || !selectedOperatorId}
+                disabled={!selectedOperatorId || (selectedOperator?.target !== "all" && !selectedFieldId)}
             >
                 適用
             </button>
+
+            {isTargetModalOpen && (
+                <div style={{
+                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+                    justifyContent: "center", alignItems: "center",
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: "white", padding: "2rem", borderRadius: "8px",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.3)", textAlign: "center",
+                        minWidth: "300px",
+                    }}>
+                        <p style={{ marginBottom: "1rem"}}>誰に適用しますか</p>
+                        <button style={{ marginRight: "1rem" }} onClick={() => {onExecuteOperator("player"); setIsTargetModalOpen(false); }}>
+                            自分
+                        </button>
+                        <button style={{ marginRight: "1rem" }} onClick={() => {onExecuteOperator("opponent"); setIsTargetModalOpen(false); }}>
+                            相手
+                        </button>
+                    </div>
+
+                </div>
+            )}
         </div>
     );
 }

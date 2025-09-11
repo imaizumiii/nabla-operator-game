@@ -17,8 +17,8 @@ async function postToEndpoint(endpoint, payload) {
     }
 }
 
-export async function getDiffResult(expr, variable) {
-    return postToEndpoint("/derivative", { expr, variable });
+export async function getDiffResult(expr, variable, order ) {
+    return postToEndpoint("/derivative", { expr, variable , order});
 }
 
 export async function getIntegrateResult(expr, variable) {
