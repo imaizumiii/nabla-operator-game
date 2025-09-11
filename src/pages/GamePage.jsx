@@ -2,15 +2,6 @@ import { useState } from "react";
 import FieldView from "../features/game/components/FieldView";
 import ControlPanel from "../features/game/components/ControlPanel"
 
-const initialField = [
-  { id: "func-1", name: "sin(x)/x", display: "\\dfrac{\\sin\\left(x\\right)}{x}", type: "function", func: "sin(x)/x" },
-  { id: "func-2", name: "x^2", display: "x^2", type: "function", func: "x^2" },
-  { id: "func-3", name: "-exp(x)", display: "-e^x", type: "function", func: "-exp(x)" },
-  { id: "func-4", name: "sin(x)", display: "\\sin\\left(x\\right)", type: "function", func: "sin(x)" },
-  { id: "func-5", name: "log(x)", display: "\\log\\left(x\\right)", type: "function", func: "log(x)" },
-  { id: "func-6", name: "x-x*log(x)", display: "x-x\\log\\left(x\\right)", type: "function", func: "x-x*log(x)" },
-];
-
 const initialPlayerField = [
   { id: "player-func-1", name: "1", display: "1", type: "function", func: "1" },
   { id: "player-func-2", name: "x", display: "x", type: "function", func: "x" },
@@ -27,11 +18,12 @@ export default function GamePage() {
   const [status] = useState("idle");
   const [playerField, setPlayerField] = useState(initialPlayerField);
   const [opponentField, setOpponentField] = useState(initialOpponentField);
-  // const [field, setField] = useState(initialField);
   const [selectedField, setSelectedField] = useState(null);
   const [selectedOperator, setSelectedOperator] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingFunc, setPendingFunc] = useState(null);
 
-  const onApplyOperator = async (operator, target) => {
+  const onApplyOperator = async (operator, target) => { 
     if (!operator || !target) return;
 
     const { owner, id } = target;
@@ -52,25 +44,6 @@ export default function GamePage() {
     );
     setField(newField);
   }
-  // const onApplyOperator = async (operator, fieldId) => {
-  //   if (!operator || !fieldId) return;
-
-  //   const newField = await Promise.all(
-  //     field.map(async card => {
-  //       if (card.id !== fieldId) return card;
-
-  //       const newFunc = await operator.effect(card.name);
-  //       console.log("In onApplyOperator...[newFunc.result]: ",newFunc.result);
-  //       return {
-  //         ...card,
-  //         name: String(newFunc.result),
-  //         display: String(newFunc.display),
-  //       };
-  //     })
-  //   );
-
-  //   setField(newField);
-  // };
 
   const handleAddFunc = (func, owner) => {
     if (!func || !owner) return;
@@ -84,6 +57,17 @@ export default function GamePage() {
     } else {
       setOpponentField([...opponentField, newFunc]);
     }
+  };
+
+  const handleRequestAddFunc = (func) => {
+    setPendingFunc(func);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmAddFunc = (owner) => {
+    handleAddFunc(pendingFunc, owner);
+    setPendingFunc(null);
+    setIsModalOpen(false);
   };
 
   const handleExecuteOperator = async () => {
@@ -124,12 +108,43 @@ export default function GamePage() {
           />
 
           <ControlPanel
-            selectedField={selectedField}
+            selectedFieldId={selectedField?.id ?? null}
             onApplyOperator={setSelectedOperator}
-            handleAddFunc={handleAddFunc}
+            handleRequestAddFunc={handleRequestAddFunc}
             onExecuteOperator={handleExecuteOperator}
           />
         </div>
+        {isModalOpen && (
+          <div style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+            justifyContent: "center", alignItems: "center",
+            zIndex: 1000,
+          }}>
+            <div style={{
+              backgroundColor: "white", padding: "2rem", borderRadius: "8px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.3)", textAlign: "center",
+              minWidth: "300px",
+            }}>
+              <p style={{ marginBottom: "1rem" }}>どちらの場に追加しますか？</p>
+              <button
+                style={{ marginRight: "1rem" }}
+                onClick={() => handleConfirmAddFunc("player")}
+              >
+                自分
+              </button>
+              <button
+                style={{ marginRight: "1rem" }}
+                onClick={() => handleConfirmAddFunc("opponent")}
+              >
+                相手
+              </button>
+              <button onClick={() => { setIsModalOpen(false); setPendingFunc(null); }}>
+                キャンセル
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     )
   }

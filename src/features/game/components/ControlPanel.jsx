@@ -2,10 +2,9 @@ import { useState } from "react";
 import { cards } from "../data/cards.js";
 import { BlockMath } from "react-katex";
 
-export default function ControlPanel({ selectedFieldId, onApplyOperator, handleAddFunc, onExecuteOperator }) {
+export default function ControlPanel({ selectedFieldId, onApplyOperator, handleRequestAddFunc, onExecuteOperator }) {
     const [selectedOperatorId, setSelectedOperatorId] = useState(null);
     const [selectedFuncId, setSelectedFuncId] = useState(null);
-    const [funcOwner, setFuncOwner] = useState("player");
 
     const funcCards = cards.filter(card => card.type === "function");
     const operatorCards = cards.filter(card => card.type === "operator");
@@ -42,9 +41,9 @@ export default function ControlPanel({ selectedFieldId, onApplyOperator, handleA
             </div>
             <button
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
-                onClick={ () => {
-                    const selectedFunc = funcCards.find(f => f.id === selectedFuncId);
-                    handleAddFunc(selectedFunc)
+                onClick={() => {
+                    const selectedFunc = funcCards.find((f) => f.id === selectedFuncId);
+                    handleRequestAddFunc(selectedFunc)
                 }}
                 disabled={!selectedFuncId}
             >
