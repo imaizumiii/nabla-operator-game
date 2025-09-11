@@ -23,18 +23,19 @@ export default function GamePage() {
     if (!operator || !fieldId) return;
 
     const newField = await Promise.all(
-      field.map(async operator => {
-        if (operator.id !== fieldId) return operator;
+      field.map(async card => {
+        if (card.id !== fieldId) return card;
 
-        const newFunc = await operator.effect(operator.name);
+        const newFunc = await operator.effect(card.name);
+        console.log("In onApplyOperator...[newFunc.result]: ",newFunc.result);
         return {
-          ...operator,
+          ...card,
           name: String(newFunc.result),
           display: String(newFunc.display),
         };
       })
     );
-
+    
     setField(newField);
   };
 
