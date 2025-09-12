@@ -1,0 +1,44 @@
+.
+├── README.md
+├── __pycache__
+│   └── main.cpython-312.pyc
+├── eslint.config.js
+├── index.html
+├── main.py
+├── memo.md
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   └── vite.svg
+├── src
+│   ├── App.css
+│   ├── App.jsx
+│   ├── components
+│   │   ├── FunctionKeypad.jsx
+│   │   └── MathView.jsx
+│   ├── features
+│   │   ├── calclator
+│   │   │   └── useCalculatorLogic.js
+│   │   └── game
+│   │       ├── components
+│   │       │   ├── ControlPanel.jsx
+│   │       │   ├── FieldView.jsx
+│   │       │   └── HandView.jsx
+│   │       └── data
+│   │           ├── cards.js
+│   │           ├── limitApi.js
+│   │           └── operators.js
+│   ├── index.css
+│   ├── main.jsx
+│   ├── pages
+│   │   ├── CalculatorPage.jsx
+│   │   └── GamePage.jsx
+│   └── utils
+│       └── calcLogic.js
+├── tailwind.config.js
+├── testSympy.ipynb
+├── tree.txt
+└── vite.config.js
+
+12 directories, 30 files

@@ -95,7 +95,7 @@ K--（x,/）-->N(基底を選択、同時に使う関数を選択)-->O(計算す
 ├── eslint.config.js
 ├── index.html
 ├── main.py
-├── memo.txt
+├── memo.md
 ├── package-lock.json
 ├── package.json
 ├── postcss.config.js
@@ -127,9 +127,9 @@ K--（x,/）-->N(基底を選択、同時に使う関数を選択)-->O(計算す
 │   └── utils
 │       └── calcLogic.js
 ├── tailwind.config.js
+├── testSympy.ipynb
 ├── tree.txt
 └── vite.config.js
 
-12 directories, 29 files
-
+12 directories, 30 files
 ```

@@ -74,7 +74,11 @@ export default function GamePage() {
     if (!selectedOperator) return;
     if (selectedOperator.target === "all") {
       await onApplyOperator(selectedOperator, { owner });
-    } else {
+    }
+    //  else if (selectedOperator.type === "operator" && selectedOperator.multipleAllowed{
+    //   await onApplyOperator(slectedOperator, )
+    // } 
+    else {
       await onApplyOperator(selectedOperator, selectedField);
     }
   }
@@ -159,33 +163,6 @@ export default function GamePage() {
                 相手
               </button>
               <button onClick={() => { setIsModalOpen(false); setPendingFunc(null); }}>
-                キャンセル
-              </button>
-            </div>
-          </div>
-        )}
-        {modalOperatorTarget && (
-          <div style={{
-            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
-            justifyContent: "center", alignItems: "center",
-            zIndex: 1000,
-          }}>
-            <div className="bg-white dark:bg-gray-800 text-black dark:text-white p-8 rounded-lg shadow-lg text-center min-w-[300px]">
-              <p style={{ marginBottom: "1rem" }}>誰に演算を適用しますか？</p>
-              <button
-                style={{ marginRight: "1rem" }}
-                onClick={() => handleApplyOperatorAll("player")}
-              >
-                自分
-              </button>
-              <button
-                style={{ marginRight: "1rem" }}
-                onClick={() => handleApplyOperatorAll("opponent")}
-              >
-                相手
-              </button>
-              <button onClick={() => setModalOperatorTarget(false)}>
                 キャンセル
               </button>
             </div>
