@@ -1,0 +1,35 @@
+.card {
+    border: 1px solid white;
+    border-radius: 0.25rem;
+    padding: 1rem 2rem;
+    margin: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.card:hover {
+    background-color: #F3F4F6;
+}
+
+.card.selected{
+    background-color: #DBEAFE;
+    border-color: #3B82F6;
+}
+
+@media (prefers-color-scheme: dark) {
+    .card:hover {
+        background-color: #374151;
+    }
+    .card.selected {
+        background-color: #1E40AF;
+    }
+}
+
+
+/* 
+blue100 - #DBEAFE
+blue500 - #3B82F6 
+blue-800 - #1E40AF 
+gray-100 - #F3F4F6 
+gray-700 - #374151 
+ */
