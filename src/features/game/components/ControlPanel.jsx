@@ -1,18 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion"
-import { cards } from "../data/cards.js";
 import { BlockMath } from "react-katex";
 import { onUseOperator } from "./operatorActions.jsx";
 
-function Operator({ data, selected, onClick, onUse }) {
+function Operator({ state, data, selected, onClick, onUse }) {
     const [hovered, setHovered] = useState(false);
 
     const showDescription = hovered;
 
     return (
         <div
-            onClick={onClick}
-            className={`relative card ${selected ? "selected" : ""}`}
+            onClick={(e) => {
+                e.stopPropagation(); //カード選択と区別
+                // console.log(data)
+                onUse(data)
+                onClick()
+            }}
+            className={`relative card ${(state.isChoosingBase && selected) ? "ring-4 ring-yellow-400 cursor-pointer z-50" : ""}`}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
@@ -53,6 +57,7 @@ function Operator({ data, selected, onClick, onUse }) {
                                 e.stopPropagation(); //カード選択と区別
                                 // console.log(data)
                                 onUse(data)
+                                onClick()
                             }}
                             className="button-30 font-cinzel"
                         >
@@ -78,10 +83,11 @@ export default function ControlPanel({ state, dispatch }) {
                 return (
                     <Operator //一旦funcもop扱い
                         key={card.instanceId}
+                        state={state}
                         data={card}
                         selected={card.instanceId === state.selectedOperator}
                         onClick={() => onSelectOperator(card.instanceId)}
-                        onUse={() => onUseOperator(card, dispatch)}
+                        onUse={() => onUseOperator(state, card, dispatch)}
                     />
                 )
             })}
@@ -92,10 +98,11 @@ export default function ControlPanel({ state, dispatch }) {
                 return (
                     <Operator //一旦funcもop扱い
                         key={card.instanceId}
+                        state={state}
                         data={card}
                         selected={card.instanceId === state.selectedOperator}
                         onClick={() => onSelectOperator(card.instanceId)}
-                        onUse={() => onUseOperator(card, dispatch)}
+                        onUse={() => onUseOperator(state, card, dispatch)}
                     />
                 )
             })}

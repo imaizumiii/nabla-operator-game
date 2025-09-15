@@ -1,14 +1,16 @@
 import { useReducer } from "react";
-import { useGameLogic } from "../features/game/hooks/useGameLogic";
 import ALLFieldView from "../features/game/components/FieldView";
 import ControlPanel from "../features/game/components/ControlPanel";
 import { Overlay } from "../features/game/components/operatorActions";
 import { reducer, initialState } from "../features/game/reducer";
+import { useGameEffects } from "../features/game/useGameEffects";
 
 
 export default function GamePage() {
 
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  useGameEffects(state, dispatch);
 
   return (<>
     <div style={{ display: "flex", padding: "2rem" }}>

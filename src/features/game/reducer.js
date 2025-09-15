@@ -71,8 +71,13 @@ export function reducer(state, action) {
         case "SET_REST_DECK":
             return { ...state, restDeck: action.payload };
         case "SET_SELECTED_FIELD":
+            console.log("Reducer updating selectedField:", action.payload);
+            if (!state.isChoosingBase) {
+                return state;
+            }
             return { ...state, selectedField: action.payload };
         case "SET_SELECTED_OPERATOR":
+            console.log("Reducer updating selectedOperator:", action.payload);
             return { ...state, selectedOperator: action.payload };
         case "ENTER_CHOOSE_BASE":
             return { ...state, isChoosingBase: true, selectedOperator: action.payload, };

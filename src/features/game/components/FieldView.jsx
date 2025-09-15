@@ -14,8 +14,6 @@ function Field({ state, data, selected, onClick }) {
 }
 export default function ALLFieldView({ state, dispatch }) {
   const onSelectField = (cardId) => {
-    console.log("Do onSelectField");
-    console.log(`state.selectedField is ${state.selectedField}`);
     dispatch({ type: "SET_SELECTED_FIELD", payload: cardId });
   };
 

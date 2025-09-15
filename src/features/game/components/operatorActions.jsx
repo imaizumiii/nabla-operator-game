@@ -1,9 +1,8 @@
 import { div } from "framer-motion/client";
 import { cards } from "../data/cards";
 
-export function onUseOperator(card, dispatch) {
-    console.log(card, "in onUseOperator");
-    dispatch({ type: "ENTER_CHOOSE_BASE", payload: card, });
+export function onUseOperator(state, card, dispatch) {
+    dispatch({ type: "ENTER_CHOOSE_BASE", });
 }
 
 export function Overlay({ dispatch, message }) {
