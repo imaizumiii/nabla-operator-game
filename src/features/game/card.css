@@ -1,5 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap');
+
+.font-cinzel {
+  font-family: 'Cinzel Decorative', serif;
+}
+
 .card {
-    border: 1px solid white;
+    border: 1px solid gray;
     border-radius: 0.25rem;
     padding: 1rem 2rem;
     margin: 0.5rem;
@@ -8,22 +14,77 @@
 }
 
 .card:hover {
-    background-color: #F3F4F6;
+    background-color: #c6c6c6;
 }
 
-.card.selected{
+.card.selected {
     background-color: #DBEAFE;
     border-color: #3B82F6;
 }
 
+.button-30 {
+    background: linear-gradient(180deg, #d4af37, #b8860b);
+    border: 2px solid #fff5c3;
+    border-radius: 8px;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.7), inset 0 0 6px rgba(255, 255, 255, 0.4);
+    transition: all 0.2s ease;
+}
+
+.button-30:hover {
+    box-shadow: 0 0 15px rgba(255, 255, 200, 0.9), inset 0 0 8px rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+}
+
+.panel-shadowverse {
+    background: rgba(245, 240, 220, 0.95);
+    border: 2px solid #c9b037;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 255, 200, 0.3);
+    backdrop-filter: blur(4px);
+}
+
 @media (prefers-color-scheme: dark) {
+    .card {
+        border-color: white;
+    }
+
     .card:hover {
         background-color: #374151;
     }
+
     .card.selected {
         background-color: #1E40AF;
     }
+
+    .button-30 {
+        background: linear-gradient(180deg, #4b5563, #1f2937);
+        /* グレー～黒系 */
+        border: 2px solid #9ca3af;
+        /* 落ち着いたシルバー */
+        color: #f3f4f6;
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.1);
+    }
+
+    .button-30:hover {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.9), inset 0 0 5px rgba(255, 255, 255, 0.15);
+        transform: scale(1.05);
+    }
+
+    .panel-shadowverse {
+        background: rgba(30, 30, 40, 0.95);
+        /* 暗めの背景 */
+        border: 2px solid #475569;
+        /* 青みのある枠 */
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.05);
+        color: #e5e7eb;
+        /* 明るすぎない文字色 */
+    }
 }
+
 
 
 /* 

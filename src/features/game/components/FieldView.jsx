@@ -2,11 +2,11 @@ import { BlockMath } from "react-katex";
 import "../../game/card.css"
 // import "onSelect"
 
-function Field({ data, selected, onClick }) {
+function Field({ state, data, selected, onClick }) {
   return (
     <div
       onClick={onClick}
-      className={`card ${selected ? "selected" : ""}`}
+      className={`card ${state.isChoosingBase ? "ring-4 ring-yellow-400 cursor-pointer z-50" : ""} ${selected ? "selected" : ""}`}
     >
       <BlockMath math={data.display} />
     </div>
@@ -20,12 +20,13 @@ export default function ALLFieldView({ state, dispatch }) {
   };
 
   return (<>
-  <h2>自分の場</h2>
+    <h2>自分の場</h2>
     <div style={{ display: "flex" }}>
       {state.field.playerField.map((card) => {
         return (
           <Field
             key={card.id}
+            state={state}
             data={card}
             selected={card.id === state.selectedField}
             onClick={() => onSelectField(card.id)}
@@ -39,6 +40,7 @@ export default function ALLFieldView({ state, dispatch }) {
         return (
           <Field
             key={card.id}
+            state={state}
             data={card}
             selected={card.id === state.selectedField}
             onClick={() => onSelectField(card.id)}
