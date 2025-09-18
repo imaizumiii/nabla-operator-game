@@ -56,9 +56,11 @@ export const initialState = {
         opponentHand: initialOpponentHand,
     },
     restDeck: initialRestDeck,
+    selectedBase: null,
     selectedField: null,
     selectedOperator: null,
     isChoosingBase: false,
+    isChoosingField: false,
 };
 
 //dispatch一覧
@@ -70,19 +72,26 @@ export function reducer(state, action) {
             return { ...state, hand: action.payload };
         case "SET_REST_DECK":
             return { ...state, restDeck: action.payload };
-        case "SET_SELECTED_FIELD":
-            console.log("Reducer updating selectedField:", action.payload);
+        case "SET_SELECTED_BASE":
             if (!state.isChoosingBase) {
                 return state;
             }
-            return { ...state, selectedField: action.payload };
+            return { ...state, selectedBase: action.payload };
         case "SET_SELECTED_OPERATOR":
-            console.log("Reducer updating selectedOperator:", action.payload);
             return { ...state, selectedOperator: action.payload };
+        case "SET_SELECTED_FIELD":
+            if (!state.isChoosingField) {
+                return state;
+            }
+            return { ...state, selectedField: action.payload }
         case "ENTER_CHOOSE_BASE":
             return { ...state, isChoosingBase: true, selectedOperator: action.payload, };
         case "EXIT_CHOOSE_BASE":
             return { ...state, isChoosingBase: false, selectedOperator: null, };
+        case "ENTER_CHOOSE_FIELD":
+            return { ...state, isChoosingField: true, selectedOperator: action.payload, };
+        case "EXIT_CHOOSE_FIELD":
+            return { ...state, isChoosingField: false, selectedOperator: null, };
         default:
             return state;
     }

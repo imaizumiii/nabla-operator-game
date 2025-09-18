@@ -7,7 +7,7 @@ export const cards = [
     {
         id: "function-cos",
         name: "cos(x)",
-        display: "\\cos",
+        display: "\\cos(x)",
         type: "function",
         description: "基底として場に追加できる",
         effect: () => "cos(x)",
@@ -15,7 +15,7 @@ export const cards = [
     {
         id: "function-sin",
         name: "sin(x)",
-        display: "\\sin",
+        display: "\\sin(x)",
         type: "function",
         description: "基底として場に追加できる",
         effect: () => "sin(x)",

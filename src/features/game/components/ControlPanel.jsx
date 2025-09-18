@@ -16,7 +16,7 @@ function Operator({ state, data, selected, onClick, onUse }) {
                 onUse(data)
                 onClick()
             }}
-            className={`relative card ${(state.isChoosingBase && selected) ? "ring-4 ring-yellow-400 cursor-pointer z-50" : ""}`}
+            className={`relative card ${selected ? "ring-4 ring-yellow-400 cursor-pointer z-50" : ""}`}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >

@@ -1,7 +1,7 @@
 import { useReducer } from "react";
 import ALLFieldView from "../features/game/components/FieldView";
 import ControlPanel from "../features/game/components/ControlPanel";
-import { Overlay } from "../features/game/components/operatorActions";
+import { OverlayTargetAll, OverlayTargetSingle } from "../features/game/components/operatorActions";
 import { reducer, initialState } from "../features/game/reducer";
 import { useGameEffects } from "../features/game/useGameEffects";
 
@@ -23,7 +23,10 @@ export default function GamePage() {
     </div>
     {/* Overlay */}
     {state.isChoosingBase && (
-      <Overlay dispatch={dispatch} message="どの基底に使用しますか？" />
+      <OverlayTargetSingle dispatch={dispatch} />
+    )}
+    {state.isChoosingField && (
+      <OverlayTargetAll dispatch={dispatch} />
     )}
   </>)
 }
