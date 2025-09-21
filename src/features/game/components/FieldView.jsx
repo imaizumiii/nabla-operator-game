@@ -8,7 +8,7 @@ function Field({ state, data, selected, onClick }) {
     <div
       onClick={onClick}
       className={`card
-        ${state.isChoosingBase ? "ring-4 ring-yellow-400 cursor-pointer z-50" : ""}
+        ${state.isChoosingBase || state.isUsingDiffInt ? "ring-4 ring-yellow-400 cursor-pointer z-50" : ""}
         ${selected ? "selected" : ""}`}
     >
       <BlockMath math={data.display} />
@@ -29,7 +29,7 @@ export default function ALLFieldView({ state, dispatch }) {
       className={`p-4 border rounded ${state.isChoosingField ? "ring-4 ring-yellow-400 cursor-pointer relative z-50" : ""}`}
       onClick={() => onSelectField(state.field.playerField)}
     >
-      {state.field.playerField.map((card) => {
+      {state.field.playerField.cards.map((card) => {
         return (
           <Field
             key={card.id}
@@ -46,7 +46,7 @@ export default function ALLFieldView({ state, dispatch }) {
       className={`p-4 border rounded ${state.isChoosingField ? "ring-4 ring-yellow-400 cursor-pointer relative z-50" : ""}`}
       onClick={() => onSelectField(state.field.opponentField)}
     >
-      {state.field.opponentField.map((card) => {
+      {state.field.opponentField.cards.map((card) => {
         return (
           <Field
             key={card.id}

@@ -1,7 +1,7 @@
 import { useReducer } from "react";
 import ALLFieldView from "../features/game/components/FieldView";
 import ControlPanel from "../features/game/components/ControlPanel";
-import { OverlayTargetAll, OverlayTargetSingle } from "../features/game/components/operatorActions";
+import { OverlaySelectField, OverlayTargetSingle, OverlayUseDiffInt } from "../features/game/components/operatorActions";
 import { reducer, initialState } from "../features/game/reducer";
 import { useGameEffects } from "../features/game/useGameEffects";
 
@@ -26,7 +26,10 @@ export default function GamePage() {
       <OverlayTargetSingle dispatch={dispatch} />
     )}
     {state.isChoosingField && (
-      <OverlayTargetAll dispatch={dispatch} />
+      <OverlaySelectField dispatch={dispatch} />
+    )}
+    {state.isUsingDiffInt && (
+      <OverlayUseDiffInt dispatch={dispatch} />
     )}
   </>)
 }

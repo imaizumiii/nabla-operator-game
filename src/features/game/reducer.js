@@ -31,22 +31,30 @@ function buildInitialDeck(cards, handSize = 7) {
 }
 
 //最初の状態
-const initialPlayerField = [
-    { id: "player-func-1", name: "1", display: "1", type: "function", func: "1" },
-    { id: "player-func-2", name: "x", display: "x", type: "function", func: "x" },
-    { id: "player-func-3", name: "x^2", display: "x^2", type: "function", func: "x^2" },
-]
+const initialPlayerField = {
+    side: "player",
+    cards: [
+        { id: "player-func-1", name: "1", display: "1", type: "function", func: "1" },
+        { id: "player-func-2", name: "x", display: "x", type: "function", func: "x" },
+        { id: "player-func-3", name: "x^2", display: "x^2", type: "function", func: "x^2" },
+    ]
 
-const initialOpponentField = [
-    { id: "opponent-func-1", name: "1", display: "1", type: "function", func: "1" },
-    { id: "opponent-func-2", name: "x", display: "x", type: "function", func: "x" },
-    { id: "opponent-func-3", name: "x^3", display: "x^3", type: "function", func: "x^3" },
-]
+}
+
+const initialOpponentField = {
+    side: "opponent",
+    cards: [
+        { id: "opponent-func-1", name: "1", display: "1", type: "function", func: "1" },
+        { id: "opponent-func-2", name: "x", display: "x", type: "function", func: "x" },
+        { id: "opponent-func-3", name: "x^3", display: "x^3", type: "function", func: "x^3" },
+    ]
+}
 
 const { initialPlayerHand, initialOpponentHand, initialRestDeck } = buildInitialDeck(cards);
 
 //state一覧
 export const initialState = {
+    count: 4,
     field: {
         playerField: initialPlayerField,
         opponentField: initialOpponentField,
@@ -59,13 +67,17 @@ export const initialState = {
     selectedBase: null,
     selectedField: null,
     selectedOperator: null,
+    selectedMultOperator: [],
     isChoosingBase: false,
     isChoosingField: false,
+    isUsingDiffInt: false,
 };
 
 //dispatch一覧
 export function reducer(state, action) {
     switch (action.type) {
+        case "SET_COUNT":
+            return { ...state, count: action.payload };
         case "SET_FIELD":
             return { ...state, field: action.payload };
         case "SET_HAND":
@@ -73,17 +85,19 @@ export function reducer(state, action) {
         case "SET_REST_DECK":
             return { ...state, restDeck: action.payload };
         case "SET_SELECTED_BASE":
-            if (!state.isChoosingBase) {
+            if (!state.isChoosingBase && !state.isUsingDiffInt) {
                 return state;
             }
             return { ...state, selectedBase: action.payload };
         case "SET_SELECTED_OPERATOR":
             return { ...state, selectedOperator: action.payload };
         case "SET_SELECTED_FIELD":
-            if (!state.isChoosingField) {
+            if (!state.isChoosingField && !state.isUsingDiffInt) {
                 return state;
             }
-            return { ...state, selectedField: action.payload }
+            return { ...state, selectedField: action.payload };
+        case "SET_SELECTED_MULT_OPERATOR":
+            return { ...state, selectedMultOperator: action.payload };
         case "ENTER_CHOOSE_BASE":
             return { ...state, isChoosingBase: true, selectedOperator: action.payload, };
         case "EXIT_CHOOSE_BASE":
@@ -92,6 +106,10 @@ export function reducer(state, action) {
             return { ...state, isChoosingField: true, selectedOperator: action.payload, };
         case "EXIT_CHOOSE_FIELD":
             return { ...state, isChoosingField: false, selectedOperator: null, };
+        case "ENTER_USE_DIFFINT":
+            return { ...state, isUsingDiffInt: true, selectedOperator: action.payload, };
+        case "EXIT_USE_DIFFINT":
+            return { ...state, isUsingDiffInt: false, selectedOperator: null, };
         default:
             return state;
     }
